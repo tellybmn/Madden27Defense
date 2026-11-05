@@ -1,7 +1,7 @@
 __pycache__/
 *.pyc
-*.db
-*.db-wal
-*.db-shm
-custom_playbook.json
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/custom_playbook.json
 .pytest_cache/

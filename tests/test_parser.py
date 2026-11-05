@@ -2,8 +2,8 @@ import sqlite3
 
 import pytest
 
-import db
-from parser import (
+from src import database as db
+from src.parser import (
     ScrapedFormation, ScrapedPlaybook, canonical_formation_key, classify_play, infer_formation,
     parse_formation_page, parse_index, play_type, slugify,
 )
@@ -88,7 +88,7 @@ def test_blitz_is_not_sim():
 
 
 def test_sim_and_blitz_never_both():
-    from seed_catalog import CATALOG
+    from src.offline_data import CATALOG
     for fm in CATALOG.values():
         for plays in fm.values():
             for t in plays:

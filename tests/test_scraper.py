@@ -1,10 +1,9 @@
 import httpx
 import pytest
 
-import db
-from mock_site import build_site
-from scraper import FetchError, HttpxLoader, MockLoader, Scraper, USER_AGENTS, resolve_slugs
-from seed_catalog import CATALOG
+from src import database as db
+from src.offline_data import CATALOG, build_site
+from src.scraper import FetchError, HttpxLoader, MockLoader, Scraper, USER_AGENTS, resolve_slugs
 from tests.fixtures.mock_playbook_pages import FORMATION_HTML, INDEX_HTML, PAGES
 
 

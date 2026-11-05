@@ -9,7 +9,7 @@ from typing import Awaitable, Callable, Protocol
 
 import httpx
 
-from parser import (
+from .parser import (
     ScrapedFormation, ScrapedPlaybook, classify_play, infer_formation, parse_formation_page,
     parse_index, playbook_display_name,
 )

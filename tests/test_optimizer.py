@@ -1,11 +1,10 @@
 import pytest
 
-import db
-import optimizer as opt
-from mock_site import build_site
-from parser import infer_formation
-from scraper import MockLoader, Scraper
-from seed_catalog import CATALOG
+from src import database as db
+from src import optimizer as opt
+from src.offline_data import CATALOG, build_site
+from src.parser import infer_formation
+from src.scraper import MockLoader, Scraper
 
 
 @pytest.fixture(scope="module")

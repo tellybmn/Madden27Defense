@@ -4,10 +4,10 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from parser import ScrapedPlaybook
+from .parser import ScrapedPlaybook
 
-SCHEMA_PATH = Path(__file__).with_name("schema.sql")
-DEFAULT_DB = "madden_defense.db"
+SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
+DEFAULT_DB = str(Path(__file__).resolve().parents[1] / "data" / "madden_defense.db")
 
 
 def connect(path: str | Path = DEFAULT_DB) -> sqlite3.Connection:

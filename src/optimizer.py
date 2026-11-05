@@ -19,7 +19,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from itertools import combinations
 
-from parser import SUB_SETS, FormationInfo, PlayInfo, infer_formation, play_type, slugify
+from .parser import SUB_SETS, FormationInfo, PlayInfo, infer_formation, play_type, slugify
 
 AUDIBLE_TYPES = ("man_pressure", "sim_pressure", "two_high", "split_match")
 ALL_TYPES = ("man_pressure", "blitz", "sim_pressure", "two_high", "split_match",
