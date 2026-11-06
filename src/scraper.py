@@ -11,12 +11,14 @@ import httpx
 
 from .parser import (
     ScrapedFormation, ScrapedPlaybook, classify_play, infer_formation, parse_formation_page,
-    parse_index, playbook_display_name,
+    parse_index, playbook_display_name, playbook_path,
 )
 
 log = logging.getLogger("madden.scraper")
 
-SOURCES = ("https://huddle.gg", "https://madden.tools")
+# madden.tools was checked live: it is organised by formation (/playbooks/formation/<name>), with no
+# per-team playbook pages, so it cannot serve these playbooks and is not a default source.
+SOURCES = ("https://huddle.gg",)
 
 TEAM_ALIASES = {
     "vikings": "minnesota-vikings", "dolphins": "miami-dolphins", "seahawks": "seattle-seahawks",
@@ -166,7 +168,7 @@ class Scraper:
         self._sem = asyncio.Semaphore(concurrency)
 
     async def _index(self, source: str, slug: str):
-        url = f"{source}/playbooks/{slug}"
+        url = f"{source}{playbook_path(slug)}"
         html = await self.loader.fetch(url)
         links = parse_index(html, url)
         if not links and self.fallback_loader:

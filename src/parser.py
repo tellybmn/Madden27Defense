@@ -41,6 +41,8 @@ _RE_C69 = re.compile(r"\b(?:cover|cov|cvr)\s*-?\s*[69]\b|\bsplit[\s-]*field\b|\b
 _RE_COVN = re.compile(r"\b(?:cover|cov|cvr)\s*-?\s*([0-5])\b")
 _RE_C2MAN = re.compile(r"\b(?:cover|cov|cvr)\s*-?\s*2\s*-?\s*man\b|\b2[\s-]*man\s*under\b")
 _RE_BARE = re.compile(r"\b(?:blitz|dog|pinch|sting|storm|fire\s*zone|crash|wham|cross\s*dog)\s*([0-4])\b")
+# Real huddle.gg titles ("FIRE 3", "2 SIM TEX", "BLITZ LOOP 3") embed the coverage as a bare digit.
+_RE_LOOSE_DIGIT = re.compile(r"(?<![\d-])([0-4])(?![\d-])")
 _KEYWORD_COVERAGE = (
     (re.compile(r"\bcross[\s-]*dog\b|\bzero\b|\ball[\s-]*out\b"), "Cover 0"),
     (re.compile(r"\btampa\b|\binvert\b"), "Tampa 2"),
@@ -55,8 +57,8 @@ _DIGIT_FAMILY = {
 _RE_RUSH_HINT = re.compile(r"(?<!cover )\b([3-8])[\s-]*(?:man|men)\b|\brush(?:ers)?\s*[:=]?\s*([3-8])\b")
 _RE_DROP8 = re.compile(r"\bprevent\b|\bdrop[\s-]*8\b")
 _RE_BLITZ = re.compile(
-    r"\bblitz\b|\boverload\b|\bfire[\s-]*zone\b|\bdouble\s+[ab][\s-]*gap\b|\ball[\s-]*out\b|\bstorm\b")
-_RE_SIM = re.compile(r"\bdog\b|\bcreeper\b|\bsim(?:ulated)?\b|\bexchange\b|\bwham\b|\bbluff\b|\bstunt\b|\btilt\b")
+    r"\bblitz\b|\boverload\b|\bfire[\s-]*zone\b|\bdouble\s+[ab][\s-]*gap\b|\ball[\s-]*out\b|\bstorm\b|\bfire\b|\bblast\b")
+_RE_SIM = re.compile(r"\bdog\b|\bcreeper\b|\bsim(?:ulated)?\b|\bexchange\b|\bwham\b|\bbluff\b|\bstunt\b|\btilt\b|\bscrape\b")
 _RE_PLUG = re.compile(r"\bpinch\b|\bsting\b|\bshoot\b|\bplug\b|\bcrash\b|\brun[\s-]*(?:stop|stuff)\b|\bstuff\b|\bgoal[\s-]*line\b")
 
 
@@ -89,7 +91,7 @@ def detect_coverage(n: str) -> str:
     for rx, fam in _KEYWORD_COVERAGE:
         if rx.search(n):
             return fam
-    m = _RE_BARE.search(n)
+    m = _RE_BARE.search(n) or _RE_LOOSE_DIGIT.search(n)
     if m:
         return _DIGIT_FAMILY[int(m.group(1))]
     return "Unknown"
@@ -230,19 +232,23 @@ class ScrapedPlaybook:
 
 
 def parse_index(html: str, base_url: str = "") -> list[FormationLink]:
-    """Extract formation navigation cards from a playbook index page."""
+    """Extract formation links from a huddle.gg team playbook page.
+
+    Real DOM: ``<h3 class="heading">Nickel</h3><ul class="playbooks-list"><li>
+    <a class="playbooks-list__link" href=...>2-4 Dbl Mug</a>``; the full formation
+    name is the group heading plus the link text ("Nickel 2-4 Dbl Mug").
+    """
     soup = BeautifulSoup(html or "", "lxml")
     links: list[FormationLink] = []
     seen: set[str] = set()
-    for a in soup.select("a.formation-card, a[data-formation]"):
+    for a in soup.select("a.playbooks-list__link"):
         href = (a.get("href") or "").strip()
         if not href or href.startswith(("#", "javascript:", "mailto:")):
             continue
-        label = a.get("data-formation")
-        if not label:
-            el = a.select_one(".formation-name") or a
-            label = el.get_text(" ")
-        name = clean_text(label)
+        text = clean_text(a.get_text(" "))
+        h3 = a.find_previous("h3")
+        head = clean_text(h3.get_text(" ")) if h3 else ""
+        name = text if (not head or text.lower().startswith(head.lower())) else f"{head} {text}"
         slug = slugify(name)
         if not slug or slug in seen:
             continue
@@ -252,16 +258,28 @@ def parse_index(html: str, base_url: str = "") -> list[FormationLink]:
 
 
 def parse_formation_page(html: str) -> list[str]:
-    """Extract raw play titles (deduplicated, order preserved)."""
+    """Extract raw play titles (deduplicated, order preserved) from a formation page."""
     soup = BeautifulSoup(html or "", "lxml")
     out: list[str] = []
     seen: set[str] = set()
-    for el in soup.select(".play-row .play-name, li.play .play-name, [data-play-name]"):
-        title = clean_text(el.get("data-play-name") or el.get_text(" "))
+    for el in soup.select("a.play-tile2 .play-tile2__info span"):
+        title = clean_text(el.get_text(" "))
         if title and title.lower() not in seen:
             seen.add(title.lower())
             out.append(title)
     return out
+
+
+# huddle.gg team playbook paths: /playbooks/<team>-def/ (verified live for these six)
+HUDDLE_SLUG = {
+    "minnesota-vikings": "vikings-def", "miami-dolphins": "dolphins-def",
+    "seattle-seahawks": "seahawks-def", "baltimore-ravens": "ravens-def",
+    "jacksonville-jaguars": "jaguars-def", "multiple-d": "multiple-d-def",
+}
+
+
+def playbook_path(slug: str) -> str:
+    return f"/playbooks/{HUDDLE_SLUG.get(slug, slug + '-def')}/"
 
 
 def playbook_display_name(slug: str) -> str:

@@ -3,7 +3,8 @@ from pathlib import Path
 
 _DIR = Path(__file__).parent
 
-BASE = "https://huddle.gg/playbooks/minnesota-vikings"
+BASE = "https://huddle.gg/playbooks/vikings-def/"
+FORMATION_URL = "https://huddle.gg/27/playbooks/vikings-def/nickel-2--4-dbl-mug/"
 INDEX_HTML = (_DIR / "mock_index.html").read_text(encoding="utf-8")
 FORMATION_HTML = (_DIR / "mock_formation.html").read_text(encoding="utf-8")
 
@@ -20,4 +21,4 @@ EXPECTED = {
     "Split-Field Cover 6": ("Cover 6/9", 4, False, False, False),
 }
 
-PAGES = {BASE: INDEX_HTML, f"{BASE}/nickel-2-4-dbl-mug": FORMATION_HTML}
+PAGES = {BASE: INDEX_HTML, FORMATION_URL: FORMATION_HTML}

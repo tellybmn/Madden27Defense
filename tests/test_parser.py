@@ -13,14 +13,14 @@ from tests.fixtures.mock_playbook_pages import BASE, EXPECTED, FORMATION_HTML, I
 # ---------------------------------------------------------------- extraction
 def test_index_link_extraction():
     links = parse_index(INDEX_HTML, BASE)
-    assert [l.name for l in links] == ["Nickel 2-4 Dbl Mug", "Dollar 3-2", "3-4 Bear", "Nickel 3-3 Swap Mug"]
-    assert links[0].url == "https://huddle.gg/playbooks/minnesota-vikings/nickel-2-4-dbl-mug"
-    assert links[3].url == "https://huddle.gg/playbooks/minnesota-vikings/nickel-3-3-swap-mug"
+    assert [l.name for l in links] == ["3-4 Bear", "Nickel 2-4 Dbl Mug", "Nickel 3-3 Swap Mug", "Dollar 3-2"]
+    assert links[1].url == "https://huddle.gg/27/playbooks/vikings-def/nickel-2--4-dbl-mug/"
+    assert links[2].url == "https://huddle.gg/27/playbooks/vikings-def/nickel-3--3-swap-mug/"
 
 
 def test_index_skips_dupes_js_and_missing_href():
     names = [l.name for l in parse_index(INDEX_HTML, BASE)]
-    assert names.count("Dollar 3-2") == 1
+    assert names.count("Nickel 2-4 Dbl Mug") == 1
     assert "Broken Card" not in names and "No Href" not in names
 
 
@@ -31,9 +31,9 @@ def test_index_empty_or_garbage_html():
 
 def test_formation_page_titles_deduped_and_cleaned():
     titles = parse_formation_page(FORMATION_HTML)
-    assert titles.count("Tampa 2") == 1          # whitespace-variant dupe collapsed
+    assert titles.count("TAMPA 2") == 1          # whitespace-variant dupe collapsed
     assert "" not in titles
-    assert titles[0] == "Mid Blitz 0" and len(titles) == 9
+    assert titles[0] == "MID BLITZ 0" and len(titles) == 9
 
 
 @pytest.mark.parametrize("raw,slug", [
@@ -155,9 +155,9 @@ def test_ingest_idempotent(tmp_path):
 def test_ingest_updates_changed_classification():
     conn = db.connect(":memory:")
     db.ingest_playbook(conn, _playbook())
-    conn.execute("UPDATE plays SET rush_count = 5, is_blitz = 1 WHERE play_name = 'Tampa 2'")
+    conn.execute("UPDATE plays SET rush_count = 5, is_blitz = 1 WHERE play_name = 'TAMPA 2'")
     db.ingest_playbook(conn, _playbook())
-    assert conn.execute("SELECT rush_count FROM plays WHERE play_name='Tampa 2' LIMIT 1").fetchone()[0] == 4
+    assert conn.execute("SELECT rush_count FROM plays WHERE play_name='TAMPA 2' LIMIT 1").fetchone()[0] == 4
 
 
 def test_foreign_keys_and_checks_enforced():
@@ -167,3 +167,18 @@ def test_foreign_keys_and_checks_enforced():
     db.ingest_playbook(conn, _playbook())
     with pytest.raises(sqlite3.IntegrityError):  # sim and blitz are mutually exclusive
         conn.execute("UPDATE plays SET is_sim_pressure=1, is_blitz=1 WHERE play_id=1")
+
+
+# Titles taken from the real huddle.gg Madden 27 pages (live scrape), uppercase as served.
+@pytest.mark.parametrize("title,family,rush,sim,blitz,plug", [
+    ("FIRE 3", "Cover 3 Sky/Buzz/Cloud", 5, False, True, False),
+    ("BLITZ LOOP 3", "Cover 3 Sky/Buzz/Cloud", 5, False, True, False),
+    ("2 SIM TEX", "Tampa 2", 4, True, False, False),
+    ("MIKE SCRAPE 3 PRESS", "Cover 3 Sky/Buzz/Cloud", 4, True, False, False),
+    ("SAW 0 BLAST", "Cover 0", 6, False, True, False),
+    ("COFFEE HOUSE 3 SEAM", "Cover 3 Sky/Buzz/Cloud", 4, False, False, False),
+    ("1 STING TEX", "Cover 1", 4, False, False, True),
+])
+def test_real_site_titles(title, family, rush, sim, blitz, plug):
+    p = classify_play(title)
+    assert (p.coverage_family, p.rush_count, p.is_sim_pressure, p.is_blitz, p.is_run_plug) == (family, rush, sim, blitz, plug)

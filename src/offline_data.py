@@ -10,7 +10,9 @@ from __future__ import annotations
 
 from html import escape
 
-from .parser import playbook_display_name, slugify
+import re
+
+from .parser import playbook_display_name, playbook_path, slugify
 
 POOLS: dict[str, list[str]] = {
     "man_pressure": ["Cover 0 Blitz", "Mid Blitz 0", "Cross Dog 0", "Double A Gap Blitz 0", "Overload Blitz 0"],
@@ -73,33 +75,56 @@ CATALOG: dict[str, dict[str, list[str]]] = {
 }
 
 
-# ---- synthetic huddle.gg-style DOM renderer (see module docstring caveat)
-
+# ---- synthetic renderer that mirrors the real huddle.gg DOM (verified against live pages)
 HOST = "https://huddle.gg"
 
 
+def _huddle_slug(text: str) -> str:
+    """huddle.gg slugs keep a double dash between digits: '3-4 Bear' -> '3--4-bear'."""
+    return re.sub(r"(?<=\d)-(?=\d)", "--", slugify(text))
+
+
+def _split_heading(name: str) -> tuple[str, str]:
+    m = re.match(r"^(nickel|dime|dollar|quarter|goal line)\s+(.*)$", name, re.I)
+    if m:
+        return m.group(1).title(), m.group(2)
+    m = re.match(r"^(\d(?:-\d)+)\s*(.*)$", name)
+    return (m.group(1), m.group(2) or m.group(1)) if m else (name, name)
+
+
 def render_index(playbook_name: str, playbook_slug: str, formation_names: list[str]) -> str:
-    cards = "\n".join(
-        f'    <a class="formation-card" href="/playbooks/{playbook_slug}/{slugify(f)}" data-formation="{escape(f)}">'
-        f'<h3 class="formation-name">{escape(f)}</h3></a>' for f in formation_names)
-    return (f'<!doctype html><html><head><title>{escape(playbook_name)} Defensive Playbook</title></head><body>\n'
-            f'<main><h1 class="playbook-title">{escape(playbook_name)}</h1>\n'
-            f'  <nav class="formation-grid" data-role="formation-nav">\n{cards}\n  </nav></main></body></html>')
+    groups: dict[str, list[tuple[str, str]]] = {}
+    for f in formation_names:
+        head, rest = _split_heading(f)
+        groups.setdefault(head, []).append((rest, f))
+    hs = playbook_path(playbook_slug).strip("/").split("/")[-1]
+    blocks = []
+    for head, items in groups.items():
+        lis = "\n".join(
+            f'<li class="playbooks-list__item"><a class="playbooks-list__link" '
+            f'href="/27/playbooks/{hs}/{_huddle_slug(full)}/">\n  {escape(rest)}\n</a></li>'
+            for rest, full in items)
+        blocks.append(f'<div class="wrapper pb-5"><h3 class="heading">{escape(head)}</h3>\n'
+                      f'<ul class="playbooks-list">\n{lis}\n</ul></div>')
+    return (f'<!doctype html><html><head><title>{escape(playbook_name)} Defense Playbook</title></head><body>'
+            f'<h1>{escape(playbook_name)}</h1>\n' + "\n".join(blocks) + '</body></html>')
 
 
 def render_formation(formation_name: str, plays: list[str]) -> str:
-    rows = "\n".join(
-        f'    <tr class="play-row"><td class="play-name">{escape(p)}</td><td class="play-meta">DEF</td></tr>'
-        for p in plays)
-    return (f'<!doctype html><html><body><h1 class="formation-title">{escape(formation_name)}</h1>\n'
-            f'<table class="play-table"><tbody>\n{rows}\n</tbody></table></body></html>')
+    tiles = "\n".join(
+        f'<a class="play-tile2" href="#"><img alt="{escape(p)}" src="x.jpg"/>'
+        f'<div class="play-tile2__info"><span>{escape(p.upper())}</span></div></a>' for p in plays)
+    return (f'<!doctype html><html><body><h1>{escape(formation_name)}</h1>'
+            f'<div class="l-sidebar__main"><h2 class="heading">{escape(formation_name)}</h2>\n'
+            f'<div class="play-tile2-list">\n{tiles}\n</div></div></body></html>')
 
 
 def build_site(catalog: dict[str, dict[str, list[str]]], host: str = HOST) -> dict[str, str]:
     """catalog: {playbook_slug: {formation_name: [play titles]}} -> {url: html}."""
     pages: dict[str, str] = {}
     for slug, formations in catalog.items():
-        pages[f"{host}/playbooks/{slug}"] = render_index(playbook_display_name(slug), slug, list(formations))
+        pages[f"{host}{playbook_path(slug)}"] = render_index(playbook_display_name(slug), slug, list(formations))
+        hs = playbook_path(slug).strip("/").split("/")[-1]
         for fname, plays in formations.items():
-            pages[f"{host}/playbooks/{slug}/{slugify(fname)}"] = render_formation(fname, plays)
+            pages[f"{host}/27/playbooks/{hs}/{_huddle_slug(fname)}/"] = render_formation(fname, plays)
     return pages

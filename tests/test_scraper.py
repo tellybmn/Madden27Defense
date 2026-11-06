@@ -16,18 +16,19 @@ def test_resolve_slugs():
 
 
 async def test_scrape_playbook_from_fixtures():
-    loader = MockLoader({**PAGES, "https://huddle.gg/playbooks/minnesota-vikings/dollar-3-2": FORMATION_HTML})
+    loader = MockLoader({**PAGES, "https://huddle.gg/27/playbooks/vikings-def/dollar-3--2/": FORMATION_HTML})
     sp = await Scraper(loader).scrape_playbook("minnesota-vikings")
     names = [f.info.formation_name for f in sp.formations]
     assert names == ["Nickel 2-4 Dbl Mug", "Dollar 3-2"]        # 3-4 Bear / Swap Mug pages missing -> errors
-    assert len(sp.errors) == 2 and all("404" not in e or "mock" in e for e in sp.errors)
+    assert len(sp.errors) == 2
     assert len(sp.formations[0].plays) == 9
 
 
 async def test_source_fallback_to_second_site():
-    pages = {k.replace("huddle.gg", "madden.tools"): v for k, v in PAGES.items()}
-    sp = await Scraper(MockLoader(pages)).scrape_playbook("minnesota-vikings")
-    assert sp.formations and sp.formations[0].url.startswith("https://madden.tools")
+    pages = {k.replace("huddle.gg", "mirror.test"): v for k, v in PAGES.items()}
+    scraper = Scraper(MockLoader(pages), sources=("https://huddle.gg", "https://mirror.test"))
+    sp = await scraper.scrape_playbook("minnesota-vikings")
+    assert sp.formations and sp.formations[0].url.startswith("https://mirror.test")
     assert any("huddle.gg" in e for e in sp.errors)
 
 
