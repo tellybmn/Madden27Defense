@@ -1,0 +1,18 @@
+{
+  "_readme": "UNCALIBRATED TEMPLATE. Fill in keys/sequences/indices for your Madden 27 PC build, then set calibrated=true. Sequence items are key names or 'wait:SECONDS'. Placeholders: {button_key}.",
+  "calibrated": false,
+  "window_title": "Madden NFL 27",
+  "killswitch": "esc",
+  "keys": {"up": "up", "down": "down", "left": "left", "right": "right", "confirm": "enter", "back": "backspace"},
+  "button_keys": {"Y": "y", "X": "x", "B": "b", "A": "a"},
+  "delays": {"key": 0.15, "menu": 0.8, "section": 1.5},
+  "sequences": {
+    "open_editor": [],
+    "open_audible_editor": [],
+    "delete_formation": [],
+    "add_formation": [],
+    "bind_audible": []
+  },
+  "formation_index": {},
+  "play_index": {}
+}

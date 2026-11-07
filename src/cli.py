@@ -139,6 +139,53 @@ def cmd_export(args) -> int:
     return 0
 
 
+def cmd_inject(args) -> int:
+    from . import macro_builder as mb
+    try:
+        data = mb.load_inputs(Path(args.playbook), Path(args.cheat_sheet))
+        profile = mb.load_profile(Path(args.profile))
+        plan = mb.build_plan(data, profile)
+    except (mb.MacroError, OSError, KeyError) as e:
+        console.print(f"[red]{e}[/]")
+        return 2
+    if args.plan_out:
+        Path(args.plan_out).write_text(plan.to_json())
+    n = plan.counts()
+    console.print(f"Plan: {n.get('key', 0)} key presses, {n.get('prompt', 0)} assist prompts, "
+                  f"{n.get('wait', 0)} waits across {n.get('section', 0)} sections")
+    if not args.run:
+        backend = mb.DryRunBackend(profile["window_title"])
+        mb.run_plan(plan, profile, backend, sleep=lambda s: None)
+        console.print("[green]Dry run OK[/] (no input sent). Use --run on the PC after calibrating the profile.")
+        return 0
+    import time
+    try:
+        backend = mb.DirectInputBackend(profile.get("killswitch", "esc"))
+    except mb.MacroError as e:
+        console.print(f"[red]{e}[/]")
+        return 3
+    console.print(f"Starting in {args.start_delay}s: click into Madden now. Press {profile.get('killswitch', 'esc').upper()} to abort.")
+    time.sleep(args.start_delay)
+    try:
+        sent = mb.run_plan(plan, profile, backend, delay_scale=args.delay_scale, live=True)
+    except mb.MacroError as e:
+        console.print(f"[red]Stopped: {e}[/]")
+        return 3
+    console.print(f"[green]Done[/]: {sent} key presses sent.")
+    return 0
+
+
+def cmd_inspect_saves(args) -> int:
+    from . import save_inspector
+    rows = save_inspector.inspect()
+    if not rows:
+        console.print("No Madden NFL 27 folders found under Documents (run this on the PC).")
+        return 1
+    for r in rows:
+        console.print(f"{r['bytes']:>10}  {r['magic']}  {r['sha256_16']}  {r['path']}")
+    return 0
+
+
 def cmd_report(args) -> int:
     """Write a markdown report: test results, selected formations, audible matrices."""
     root = Path(__file__).resolve().parents[1]
@@ -226,6 +273,20 @@ def main(argv=None) -> int:
     s.add_argument("--format", choices=("table", "markdown"), default="table")
     s.add_argument("--out", help="write the output to this file (markdown format)")
     s.set_defaults(fn=cmd_export)
+
+    s = sub.add_parser("inject", help="apply the playbook via a keyboard macro (dry-run by default)")
+    root = Path(__file__).resolve().parents[1] / "data"
+    s.add_argument("--playbook", default=str(root / "live_playbook.json"))
+    s.add_argument("--cheat-sheet", default=str(root / "AUDIBLES_CHEAT_SHEET.md"))
+    s.add_argument("--profile", default=str(root / "macro_profile.json"))
+    s.add_argument("--plan-out", help="write the compiled plan as JSON")
+    s.add_argument("--run", action="store_true", help="send real input (Windows, calibrated profile required)")
+    s.add_argument("--start-delay", type=float, default=10.0)
+    s.add_argument("--delay-scale", type=float, default=1.0, help="multiply all delays (e.g. 1.5 for a slow PC)")
+    s.set_defaults(fn=cmd_inject)
+
+    s = sub.add_parser("inspect-saves", help="read-only listing of Madden 27 profile/save files")
+    s.set_defaults(fn=cmd_inspect_saves)
 
     s = sub.add_parser("report", help="write markdown summary report")
     s.add_argument("--playbook", default=DEFAULT_OUT)

@@ -4,16 +4,40 @@
   "objective": 396.662,
   "total_formations": 6,
   "total_plays": 153,
+  "constraint_active": {
+    "formations": 6,
+    "plays": 350
+  },
   "constraints": [
     {
-      "name": "C1 formations <= cap",
+      "name": "T-active formations <= cap",
       "ok": true,
       "detail": "6/6"
     },
     {
-      "name": "C1 plays <= cap",
+      "name": "T-active rotation plays <= cap",
       "ok": true,
       "detail": "153/350"
+    },
+    {
+      "name": "G-engine plays per front <= 75",
+      "ok": true,
+      "detail": "largest: Nickel 2-4 (42)"
+    },
+    {
+      "name": "G-engine total personnel <= 15",
+      "ok": true,
+      "detail": "9 base + 0 added = 9"
+    },
+    {
+      "name": "G-engine total fronts <= 73",
+      "ok": true,
+      "detail": "41 base + 1 added = 42"
+    },
+    {
+      "name": "G-engine total plays <= 750",
+      "ok": true,
+      "detail": "475 base + 24 added = 499"
     },
     {
       "name": "C2 disguise entropy (nickel/dime/dollar)",
@@ -41,6 +65,93 @@
       "detail": "all formations complete"
     }
   ],
+  "global_budget": {
+    "base": "Minnesota Vikings",
+    "foundation": {
+      "personnel": 9,
+      "fronts": 41,
+      "plays": 475
+    },
+    "caps": {
+      "personnel": 15,
+      "fronts": 73,
+      "plays": 750,
+      "plays_per_front": 75
+    },
+    "remaining": {
+      "personnel": 6,
+      "fronts": 32,
+      "plays": 275
+    },
+    "added": {
+      "personnel": 0,
+      "fronts": 1,
+      "plays": 24
+    },
+    "totals_if_base_kept": {
+      "personnel": 9,
+      "fronts": 42,
+      "plays": 499
+    },
+    "scraped_base_fronts": 28,
+    "retained": [
+      {
+        "name": "3-4 Under",
+        "plays": 19
+      },
+      {
+        "name": "Dime 2-3",
+        "plays": 37
+      },
+      {
+        "name": "Dime 3-2 Rush",
+        "plays": 21
+      },
+      {
+        "name": "Nickel 2-4",
+        "plays": 42
+      },
+      {
+        "name": "Nickel 2-4 Dbl Mug",
+        "plays": 16
+      }
+    ],
+    "added_fronts": [
+      {
+        "name": "Nickel 3-3 Swap Dbl Mug",
+        "plays": 18,
+        "from": [
+          "Jacksonville Jaguars",
+          "Multiple D"
+        ]
+      }
+    ],
+    "pruned": [
+      "2-4-5 Over Wide",
+      "3-3-5 3 High Penny",
+      "3-4 Even",
+      "3-4 Over",
+      "3-4 Over Ed",
+      "3-4 Over Solid",
+      "3-4 Tite 5 Tech",
+      "4-2-5 3 High",
+      "4-3 Even 6-1",
+      "4-3 Odd Leo",
+      "Dime 1-4",
+      "Dime 1-4 Dbl Mug",
+      "Dime 2-3 Single Mug",
+      "Goal Line 5-3",
+      "Goal Line 6-2",
+      "Goal Line Pinch",
+      "Nickel 2-4 Load Dbl Mug",
+      "Nickel 2-4 Load Mug",
+      "Nickel 2-4 Single Mug",
+      "Nickel 2-4 Swap Dbl Mug",
+      "Nickel 2-4 Wide",
+      "Nickel 3-3 Odd",
+      "Prevent 3 Deep"
+    ]
+  },
   "formations": [
     {
       "name": "3-4 Under",

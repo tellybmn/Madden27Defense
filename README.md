@@ -36,3 +36,32 @@ consists of user-supplied in-game counts, not scraped values. Tier 1 is checked 
 base playbook is kept and the hybrid fronts and plays are layered on. `data/REPORT_LIVE.md` shows which base fronts are
 retained, which hybrid fronts are added and which are pruned from the active set. The scrape lists 28 Vikings fronts
 and 436 plays, which differs from the 41/475 foundation.
+
+## Applying the playbook to Madden 27 on PC
+
+**Status: the macro is dry-run verified only.** It was built in a Linux container with no game and no Windows, so the
+menu key sequences and list positions could not be checked. The live run therefore refuses to start until you
+calibrate `data/macro_profile.json` (`"calibrated": true`).
+
+**Direct file injection is not implemented.** Madden's profile/playbook format is proprietary and undocumented, a bad
+write can corrupt a profile, and modifying game data may conflict with EA's terms and anti-cheat.
+`python cli.py inspect-saves` is a read-only listing of `Documents\Madden NFL 27` if you want that route investigated.
+
+### Steps (on the PC, Python 3.11+)
+1. `pip install -r requirements.txt pydirectinput`
+2. Rebuild so the inputs agree: `python cli.py build --base vikings --style flores-macdonald --db data/live.db --out data/live_playbook.json`
+   then `python cli.py export-audibles --playbook data/live_playbook.json --format markdown --out data/AUDIBLES_CHEAT_SHEET.md`.
+   (`inject` refuses to run if the cheat sheet and JSON disagree.)
+3. Calibrate `data/macro_profile.json` (set once for your build/controls):
+   `keys`/`button_keys` (the key bound to each in-game button), `sequences` (key lists for opening the editor, deleting a
+   formation, adding a formation, binding an audible; items are key names or `wait:SECONDS`), and optionally
+   `formation_index` / `play_index` (list positions) for fully automatic navigation.
+   Anything without a position becomes an **assist prompt**: you put the cursor on the item, press ENTER in the console,
+   and the macro does the repetitive part.
+4. Dry run (sends nothing): `python cli.py inject --plan-out data/macro_plan.json` and review the plan.
+5. Live: start Madden in borderless/windowed mode, open the Creation Center playbook editor, then
+   `python cli.py inject --run --start-delay 10` and click into the game. Slow PC? add `--delay-scale 1.5`.
+
+Safety: **ESC aborts** between every step (set `killswitch` in the profile), focus on the game window is asserted
+before every key press, and only keyboard input is sent (no game memory or files are touched). Use it offline;
+automation tools can conflict with EA's terms for online play, and that risk is yours.
