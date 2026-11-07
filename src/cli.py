@@ -97,12 +97,36 @@ def cmd_build(args) -> int:
     return 0 if all(ok for _, ok, _ in res.constraints) else 3
 
 
+def audibles_markdown(data: dict) -> str:
+    """Compact markdown cheat sheet: one 4-slot table per formation."""
+    md = ["# Defensive Audible Cheat Sheet", "",
+          f"Base: **{data['base'] or 'none'}** | Style: **{data['style']}** | "
+          f"{data['total_formations']} formations, {data['total_plays']} plays", "",
+          "Button layout is a suggested default; remap to your controller.", ""]
+    for f in data["formations"]:
+        md += [f"## {f['name']}  ({'/'.join(f['personnel'])} pers)", "",
+               "| Slot | Button | Call | Play | Fills as |", "|---|---|---|---|---|"]
+        for typ, play in f["audibles"].items():
+            slot, btn, label, _ = SLOTS[typ]
+            md.append(f"| {slot} | {btn} | {label} | **{play}** | {f.get('audible_notes', {}).get(typ, '')} |")
+        md.append("")
+    return "\n".join(md)
+
+
 def cmd_export(args) -> int:
     p = Path(args.playbook)
     if not p.exists():
         console.print(f"[red]{p} not found. Run `python cli.py build` first.[/]")
         return 1
     data = json.loads(p.read_text())
+    if args.format == "markdown":
+        text = audibles_markdown(data)
+        if args.out:
+            Path(args.out).write_text(text)
+            console.print(f"Cheat sheet written to {args.out}")
+        else:
+            print(text)
+        return 0
     t = Table(title="Quick-audible setup (suggested button layout -- remap as needed)")
     for c in ("Formation", "Slot", "Button", "Audible type", "Play", "Fills as", "Pre-snap note"):
         t.add_column(c)
@@ -173,6 +197,8 @@ def main(argv=None) -> int:
 
     s = sub.add_parser("export-audibles", help="print controller audible table")
     s.add_argument("--playbook", default=DEFAULT_OUT)
+    s.add_argument("--format", choices=("table", "markdown"), default="table")
+    s.add_argument("--out", help="write the output to this file (markdown format)")
     s.set_defaults(fn=cmd_export)
 
     s = sub.add_parser("report", help="write markdown summary report")
