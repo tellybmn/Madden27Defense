@@ -1,6 +1,9 @@
 {
-  "_readme": "Placeholder keys, calibrated=false. Run `python cli.py calibrate` to record your real keys.",
+  "_readme": "Verified Madden 27 PC defaults. audible_slot_4 (bottom) is UNVERIFIED: run `python cli.py calibrate`.",
   "calibrated": false,
+  "unverified": [
+    "audible_slot_4"
+  ],
   "window_title": "Madden NFL 27",
   "killswitch": "pause",
   "keys": {
@@ -10,22 +13,25 @@
     "down": "down",
     "left": "left",
     "right": "right",
-    "tab_left": "q",
-    "tab_right": "e",
-    "delete": "delete",
-    "assign_audible": "f",
-    "audible_slot_1": "y",
-    "audible_slot_2": "x",
-    "audible_slot_3": "b",
-    "audible_slot_4": "a"
+    "tab_left": "z",
+    "tab_right": "c",
+    "formation_cycle": "ctrlleft",
+    "set_cycle": "shiftleft",
+    "remove_all": "e",
+    "audible_slot_1": "e",
+    "audible_slot_2": "z",
+    "audible_slot_3": "c",
+    "audible_slot_4": "space"
   },
   "delays": {
     "key": 0.15,
     "menu": 0.8,
     "section": 1.5,
-    "delete_wait": 0.2,
-    "confirm_wait": 0.3
+    "remove_wait": 0.3
   },
-  "sequences": {},
+  "assume": {
+    "empty_sets_remain": false,
+    "tab_resets_selection": true
+  },
   "formation_order": []
 }

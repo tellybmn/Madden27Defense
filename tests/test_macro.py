@@ -7,6 +7,7 @@ from src import calibration as cal
 from src import macro_builder as mb
 from src import save_inspector
 from src.cli import main
+from src.parser import split_formation_name
 
 ROOT = Path(__file__).resolve().parents[1]
 PLAYBOOK, SHEET, PROFILE = ROOT / "data" / "live_playbook.json", ROOT / "data" / "AUDIBLES_CHEAT_SHEET.md", ROOT / "data" / "macro_profile.json"
@@ -20,6 +21,75 @@ def data():
 @pytest.fixture
 def profile():
     return mb.load_profile(PROFILE)
+
+
+def model(names, plays=None, tab="MY PLAYBOOK", **assume):
+    return mb.UIModel(names, plays or {}, {**cal.DEFAULT_ASSUME, **assume}, tab=tab)
+
+
+NAMES = ["3-4 Even", "3-4 Over", "Nickel 2-4", "Nickel 2-4 Dbl Mug", "Dime 2-3"]
+
+
+# ------------------------------------------------------------ name split
+@pytest.mark.parametrize("name,expected", [
+    ("Nickel 2-4 Dbl Mug", ("Nickel", "2-4 Dbl Mug")), ("3-4 Under", ("3-4", "Under")),
+    ("4-3 Even 6-1", ("4-3", "Even 6-1")), ("Goal Line 5-3", ("Goal Line", "5-3")),
+    ("Prevent 3 Deep", ("Prevent", "3 Deep")), ("2-4-5 Over Wide", ("2-4-5", "Over Wide")),
+    ("3-3-5 3 High Penny", ("3-3-5", "3 High Penny")), ("Dime 1-4 Dbl Mug", ("Dime", "1-4 Dbl Mug")),
+])
+def test_split_formation_name(name, expected):
+    assert split_formation_name(name) == expected
+
+
+# ------------------------------------------------------------ UI model
+def test_formation_cycle_wraps_and_resets_set():
+    m = model(NAMES)
+    m.apply("set_cycle")
+    assert m.current == ("3-4", "Over")
+    for _ in range(3):
+        m.apply("formation_cycle")
+    assert m.current == ("3-4", "Even")                      # 3 groups wrap to the start; set reset to first
+
+
+def test_set_cycle_wraps_within_group():
+    m = model(NAMES)
+    m.apply("formation_cycle")
+    m.apply("set_cycle")
+    assert m.current == ("Nickel", "2-4 Dbl Mug")
+    m.apply("set_cycle")                                     # wraps to the group's first set
+    assert m.current == ("Nickel", "2-4")
+
+
+def test_remove_all_vanishes_and_selection_lands_on_next_set():
+    m = model(NAMES)
+    m.apply("remove_all")
+    assert m.removed == ["3-4 Even"] and m.current == ("3-4", "Over")
+    m.apply("remove_all")                                    # group now empty -> next group, first set
+    assert m.groups == ["Nickel", "Dime"] and m.current == ("Nickel", "2-4")
+
+
+def test_empty_sets_remain_flag():
+    m = model(NAMES, empty_sets_remain=True)
+    m.apply("remove_all")
+    assert m.names() == NAMES and m.current == ("3-4", "Even")
+
+
+def test_tab_switch_resets_selection_unless_flagged():
+    m = model(NAMES)
+    m.apply("formation_cycle")
+    m.apply("tab_left")
+    assert (mb.TABS[m.tab], m.current) == ("AUDIBLES", ("3-4", "Even"))
+    m2 = model(NAMES, tab_resets_selection=False)
+    m2.apply("formation_cycle")
+    m2.apply("tab_left")
+    assert m2.current == ("Nickel", "2-4")
+
+
+def test_model_rejects_wrong_tab_actions():
+    with pytest.raises(mb.MacroError):
+        model(NAMES, tab="AUDIBLES").apply("remove_all")
+    with pytest.raises(mb.MacroError):
+        model(NAMES).apply("audible_slot_1")
 
 
 # ---------------------------------------------------------------- plan
@@ -37,61 +107,90 @@ def test_mismatch_detected(tmp_path):
 
 def test_plan_has_zero_prompts_and_matches_cheat_sheet(data, profile):
     plan = mb.build_plan(data, profile)
-    assert set(plan.counts()) == {"key", "wait", "section"}            # no 'prompt' kind exists
-    msg = mb.verify_plan(plan, profile, data, SHEET)
-    assert msg.startswith("24 audibles bound, 23 deleted, 6 kept")
+    assert set(plan.counts()) == {"key", "wait", "section"}
+    assert mb.verify_plan(plan, profile, data, SHEET) == "24 audibles bound, 23 sets emptied"
 
 
-def test_delete_loop_is_exact(data, profile):
+def test_pruning_uses_e_and_the_cycle_keys_not_delete(data, profile):
     plan = mb.build_plan(data, profile)
-    seq = [(s.action if s.kind == "key" else f"wait{s.seconds}") for s in plan.steps]
-    i = seq.index("delete")
-    assert seq[i:i + 4] == ["delete", "wait0.2", "confirm", "wait0.3"]
-    assert seq.count("delete") == 23
-
-
-def test_slot_keys_follow_top_left_right_bottom(data, profile):
-    plan = mb.build_plan(data, profile)
-    slots = [s.action for s in plan.steps if s.kind == "key" and s.action.startswith("audible_slot_")]
-    assert slots == [f"audible_slot_{i}" for i in (1, 2, 3, 4)] * 6
-    assert [mb.SLOT_POSITION[i] for i in (1, 2, 3, 4)] == ["top", "left", "right", "bottom"]
-    # each slot key is immediately preceded by ASSIGN_AUDIBLE
     acts = [s.action for s in plan.steps if s.kind == "key"]
-    for i, a in enumerate(acts):
-        if a.startswith("audible_slot_"):
-            assert acts[i - 1] == "assign_audible"
+    assert acts.count("remove_all") == 23 and "delete" not in acts and "confirm" not in acts
+    assert {"formation_cycle", "set_cycle"} <= set(acts)
+    keys = {s.action: s.value for s in plan.steps if s.kind == "key"}
+    assert (keys["remove_all"], keys["formation_cycle"], keys["set_cycle"]) == ("e", "ctrlleft", "shiftleft")
+    assert acts.index("tab_left") > max(i for i, a in enumerate(acts) if a == "remove_all")    # prune first
+    assert acts.count("tab_left") == 1 and "tab_right" not in acts
 
 
-def test_grid_move_is_relative():
-    b = mb._Builder({"keys": {"down": "d", "up": "u"}, "delays": mb.DEFAULT_DELAYS})
-    assert b.move(2, 5) == 5 and [s.action for s in b.plan.steps] == ["down"] * 3
-    b2 = mb._Builder({"keys": {"down": "d", "up": "u"}, "delays": mb.DEFAULT_DELAYS})
-    assert b2.move(4, 1) == 1 and [s.action for s in b2.plan.steps] == ["up"] * 3
-    assert mb._Builder({"keys": {}, "delays": mb.DEFAULT_DELAYS}).move(3, 3) == 3
-
-
-def test_play_scrolling_uses_alphabetical_index(data, profile):
-    f = data["formations"][0]
-    assert f["in_game_plays"] == sorted(f["in_game_plays"], key=str.lower)
+def test_audibles_use_slot_hotkeys_directly(data, profile):
     plan = mb.build_plan(data, profile)
-    sim = mb.simulate_plan(plan, profile, data)
-    assert sim["bindings"][f["name"]][1] == f["audibles"]["man_pressure"]
+    slots = [s for s in plan.steps if s.kind == "key" and s.action.startswith("audible_slot_")]
+    assert len(slots) == 24
+    assert {s.action: s.value for s in slots} == {"audible_slot_1": "e", "audible_slot_2": "z",
+                                                  "audible_slot_3": "c", "audible_slot_4": "space"}
+    assert not [s for s in plan.steps if s.action == "assign_audible"]
+
+
+def test_goto_uses_minimal_cycling(data, profile):
+    m = model(NAMES)
+    b = mb._Builder(profile, m)
+    b.goto("Nickel 2-4 Dbl Mug")
+    assert [s.action for s in b.plan.steps] == ["formation_cycle", "set_cycle"]
+    with pytest.raises(mb.MacroError, match="not in the formation list"):
+        b.goto("Nickel 9-9")
+
+
+def test_play_scroll_is_relative():
+    plays = {"Nickel 2-4": list("abcdef")}
+    m = model(["Nickel 2-4"], plays, tab_resets_selection=True)
+    m.apply("tab_left")
+    b = mb._Builder({"keys": {k: k for k in mb.REQUIRED_KEYS}, "delays": cal.DEFAULT_DELAYS}, m)
+    b.scroll_to(3)
+    b.scroll_to(1)
+    assert [s.action for s in b.plan.steps] == ["down"] * 3 + ["up"] * 2
+
+
+def test_binding_order_is_ascending_in_list(data, profile):
+    plan = mb.build_plan(data, profile)
+    acts = [s.action for s in plan.steps if s.kind == "key"]
+    start = acts.index("tab_left")
+    assert acts[start:].count("up") < acts[start:].count("down")          # scroll mostly downward
 
 
 def test_simulation_detects_a_broken_plan(data, profile):
     plan = mb.build_plan(data, profile)
-    i = next(i for i, s in enumerate(plan.steps) if s.kind == "key" and s.action == "down")
+    i = next(i for i, s in enumerate(plan.steps) if s.kind == "key" and s.action == "set_cycle")
     del plan.steps[i]
     with pytest.raises(mb.MacroError):
         mb.verify_plan(plan, profile, data, SHEET)
 
 
-def test_formation_order_override_with_extra_rows(data, profile):
-    order = list(data["global_budget"]["base_order"])
-    profile["formation_order"] = order[:3] + ["UNKNOWN EXTRA ROW"] + order[3:]
+def test_prune_limit_test_plan(data, profile):
+    plan = mb.build_plan(data, profile, prune_limit=2)
+    assert [s.action for s in plan.steps if s.kind == "key"] == ["remove_all", "remove_all"]
+    assert "TEST PLAN" in plan.preconditions[-1]
+    assert "test plan: 2 set(s) emptied" in mb.verify_plan(plan, profile, data, SHEET, prune_limit=2)
+
+
+def test_empty_sets_remain_assumption_builds_and_verifies(data, profile):
+    profile["assume"]["empty_sets_remain"] = True
     plan = mb.build_plan(data, profile)
     assert mb.verify_plan(plan, profile, data, SHEET).startswith("24 audibles")
-    assert "UNKNOWN EXTRA ROW" in mb.simulate_plan(plan, profile, data)["list"]
+    assert plan.counts()["key"] > 159                       # must cycle past emptied sets
+
+
+def test_formation_order_override_with_extra_sets(data, profile):
+    order = list(data["global_budget"]["base_order"])
+    profile["formation_order"] = order[:3] + ["Nickel 9-9 Mystery"] + order[3:]
+    plan = mb.build_plan(data, profile)
+    assert mb.verify_plan(plan, profile, data, SHEET).startswith("24 audibles")
+    assert "Nickel 9-9 Mystery" in mb.simulate_plan(plan, profile, data)["list"]
+
+
+def test_added_front_is_inserted_at_end_of_its_group(data, profile):
+    names = mb._initial_names(data, profile)
+    nickel = [n for n in names if n.startswith("Nickel ")]
+    assert nickel[-1] == "Nickel 3-3 Swap Dbl Mug"
 
 
 def test_missing_order_data_is_a_clear_error(data, profile):
@@ -105,7 +204,7 @@ def test_dry_run_sends_in_order_and_honours_delays(data, profile):
     plan, sleeps, b = mb.build_plan(data, profile), [], mb.DryRunBackend()
     n = mb.run_plan(plan, profile, b, sleep=sleeps.append, delay_scale=2.0)
     assert n == plan.counts()["key"] == len(b.log)
-    assert 0.4 in [round(x, 3) for x in sleeps] and 0.6 in [round(x, 3) for x in sleeps]   # 200/300ms doubled
+    assert round(max(sleeps), 3) == round(profile["delays"]["menu"] * 2.0, 3)
 
 
 def test_killswitch_aborts_mid_run(data, profile):
@@ -122,24 +221,44 @@ def test_focus_loss_aborts(data, profile):
     assert len(b.log) == 3
 
 
-def test_live_refused_when_uncalibrated(data, profile):
-    profile["calibrated"] = False
+def test_live_refused_when_uncalibrated_or_unverified(data, profile):
+    plan = mb.build_plan(data, profile)
+    assert profile["calibrated"] is False and profile["unverified"] == ["audible_slot_4"]
     with pytest.raises(mb.MacroError, match="not calibrated"):
-        mb.run_plan(mb.build_plan(data, profile), profile, mb.DryRunBackend(), live=True, sleep=lambda s: None)
+        mb.run_plan(plan, profile, mb.DryRunBackend(), live=True, sleep=lambda s: None)
+    profile["calibrated"] = True
+    with pytest.raises(mb.MacroError, match="unverified keys remain: audible_slot_4"):
+        mb.run_plan(plan, profile, mb.DryRunBackend(), live=True, sleep=lambda s: None)
+    profile["unverified"] = []
+    assert mb.run_plan(plan, profile, mb.DryRunBackend(), live=True, sleep=lambda s: None) == plan.counts()["key"]
 
 
-def test_profile_validation(tmp_path):
+def test_profile_ships_verified_defaults(profile):
+    k = profile["keys"]
+    assert (k["tab_left"], k["tab_right"], k["formation_cycle"], k["set_cycle"], k["remove_all"]) == \
+        ("z", "c", "ctrlleft", "shiftleft", "e")
+    assert (k["audible_slot_1"], k["audible_slot_2"], k["audible_slot_3"]) == ("e", "z", "c")
+
+
+def test_profile_validation_is_context_aware(tmp_path):
     p = json.loads(PROFILE.read_text())
-    p["keys"]["delete"] = ""
+    assert mb.load_profile(PROFILE)                           # Z/C/E repeat across tabs: allowed
+    p["keys"]["remove_all"] = p["keys"]["tab_left"]           # both on MY PLAYBOOK: conflict
     f = tmp_path / "p.json"
+    f.write_text(json.dumps(p))
+    with pytest.raises(mb.MacroError, match="same screen"):
+        mb.load_profile(f)
+    p = json.loads(PROFILE.read_text())
+    p["keys"]["audible_slot_4"] = p["keys"]["audible_slot_1"]  # both on AUDIBLES: conflict
+    f.write_text(json.dumps(p))
+    with pytest.raises(mb.MacroError, match="same screen"):
+        mb.load_profile(f)
+    p = json.loads(PROFILE.read_text())
+    p["keys"]["remove_all"] = ""
     f.write_text(json.dumps(p))
     with pytest.raises(mb.MacroError, match="not set"):
         mb.load_profile(f)
-    p["keys"]["delete"] = p["keys"]["confirm"]
-    f.write_text(json.dumps(p))
-    with pytest.raises(mb.MacroError, match="share the same key"):
-        mb.load_profile(f)
-    p["keys"]["delete"] = "delete"
+    p = json.loads(PROFILE.read_text())
     p["killswitch"] = "up"
     f.write_text(json.dumps(p))
     with pytest.raises(mb.MacroError, match="killswitch"):
@@ -147,71 +266,85 @@ def test_profile_validation(tmp_path):
 
 
 # ---------------------------------------------------------------- CLI
-def test_cli_inject_dry_run_writes_plan(tmp_path, capsys):
+def test_cli_inject_dry_run_writes_plan(tmp_path):
     out = tmp_path / "plan.json"
     assert main(["inject", "--plan-out", str(out), "--dry-run"]) == 0
     plan = json.loads(out.read_text())
-    assert all(s["kind"] != "prompt" for s in plan["steps"]) and plan["preconditions"]
-    assert "Verified against cheat sheet" in capsys.readouterr().out.replace("\n", " ") or True
+    assert all(s["kind"] != "prompt" for s in plan["steps"]) and plan["preconditions"] and plan["assumptions"]
 
 
-def test_cli_inject_rejects_run_and_dry_run_together():
+def test_cli_inject_prune_limit_and_exclusive_flags(tmp_path):
+    out = tmp_path / "plan.json"
+    assert main(["inject", "--prune-limit", "3", "--plan-out", str(out), "--dry-run"]) == 0
+    assert sum(1 for s in json.loads(out.read_text())["steps"] if s["action"] == "remove_all") == 3
     with pytest.raises(SystemExit):
         main(["inject", "--run", "--dry-run"])
 
 
+def test_cli_inject_live_blocked_by_unverified_key():
+    assert main(["inject", "--run", "--yes", "--start-delay", "0"]) == 3     # unverified key / no pydirectinput
+
+
 # ---------------------------------------------------------------- calibration
-def _scripted(keys, killswitch=""):
+def asker(answers):
+    it = iter(answers)
+    return lambda prompt: next(it)
+
+
+def reader(keys):
     it = iter(keys)
-    outputs = []
-    return (lambda label: next(it)), (lambda prompt: killswitch), outputs.append, outputs
+    return lambda label: next(it)
 
 
-GOOD = ["enter", "backspace", "up", "down", "left", "right", "q", "e", "delete", "f", "y", "x", "b", "a"]
-
-
-def test_calibrate_writes_profile(tmp_path):
-    path = tmp_path / "p.json"
-    read, ask, out, _ = _scripted(GOOD)
-    prof = cal.run_calibration(path, read_key=read, ask=ask, out=out)
+def test_calibrate_defaults_path_confirms_only_the_unverified_key(tmp_path):
+    path, outs = tmp_path / "p.json", []
+    prof = cal.run_calibration(path, read_key=reader(["x"]), ask=asker(["y", ""]), out=outs.append)
     saved = json.loads(path.read_text())
-    assert saved == prof and saved["calibrated"] is True and saved["killswitch"] == "pause"
-    assert saved["keys"]["confirm"] == "enter" and saved["keys"]["audible_slot_4"] == "a"
-    assert set(saved["keys"]) == {k for k, _, _ in cal.PROMPTS}
+    assert saved == prof and saved["calibrated"] is True and saved["unverified"] == []
+    assert saved["keys"]["audible_slot_4"] == "x" and saved["keys"]["formation_cycle"] == "ctrlleft"
+    assert saved["killswitch"] == "pause"
+    assert {k: v for k, v in saved["keys"].items() if k in cal.VERIFIED_DEFAULTS} == cal.VERIFIED_DEFAULTS
 
 
-def test_calibrate_rejects_duplicates_and_unknown_keys(tmp_path):
-    read, ask, out, outputs = _scripted(["enter", "enter", "bogus-key", "backspace"] + GOOD[2:])
-    prof = cal.run_calibration(tmp_path / "p.json", read_key=read, ask=ask, out=out)
-    assert prof["keys"]["back"] == "backspace"
-    text = "\n".join(outputs)
-    assert "already bound" in text and "not a recognised key" in text
+def test_calibrate_full_capture_path(tmp_path):
+    keys = ["enter", "backspace", "up", "down", "left", "right", "z", "c", "e", "e", "z", "c", "space"]
+    prof = cal.run_calibration(tmp_path / "p.json", read_key=reader(keys),
+                               ask=asker(["n", "ctrlleft", "shiftleft", "f12"]), out=lambda m: None)
+    assert prof["keys"]["remove_all"] == "e" and prof["keys"]["audible_slot_1"] == "e"   # cross-screen repeat OK
+    assert prof["keys"]["set_cycle"] == "shiftleft" and prof["killswitch"] == "f12"
+
+
+def test_calibrate_rejects_same_screen_conflicts_and_unknown_keys(tmp_path):
+    outs = []
+    # slot 4: 'e' collides with slot 1 (AUDIBLES), 'bogus-key' is unknown, 'x' is fine
+    cal.run_calibration(tmp_path / "p.json", read_key=reader(["e", "bogus-key", "x"]),
+                        ask=asker(["y", ""]), out=outs.append)
+    text = "\n".join(outs)
+    assert "already bound to audible_slot_1 on the same screen" in text and "not a recognised key" in text
 
 
 def test_calibrate_killswitch_rules(tmp_path):
-    keys = GOOD[:6] + ["f12"] + GOOD[7:]                      # tab_left is bound to F12
-    answers = iter(["enter", "f12", "esc"])                   # unsupported, then conflicts with tab_left, then ok
-    read, _, out, outputs = _scripted(keys)
-    prof = cal.run_calibration(tmp_path / "p.json", read_key=read, ask=lambda p: next(answers), out=out)
-    text = "\n".join(outputs)
-    assert prof["killswitch"] == "esc"
-    assert "killswitch must be one of" in text and "already bound to TAB_LEFT" in text
+    outs = []
+    prof = cal.run_calibration(tmp_path / "p.json", read_key=reader(["f12"]),     # slot 4 bound to F12
+                               ask=asker(["y", "enter", "f12", "pause"]), out=outs.append)
+    text = "\n".join(outs)
+    assert prof["killswitch"] == "pause"
+    assert "killswitch must be one of" in text and "already bound to a menu action" in text
 
 
-def test_calibrate_preserves_existing_window_title_and_order(tmp_path):
+def test_calibrate_preserves_window_title_order_and_delays(tmp_path):
     path = tmp_path / "p.json"
     path.write_text(json.dumps({"window_title": "Madden Custom", "formation_order": ["A", "B"], "delays": {"key": 0.3}}))
-    read, ask, out, _ = _scripted(GOOD)
-    prof = cal.run_calibration(path, read_key=read, ask=ask, out=out)
+    prof = cal.run_calibration(path, read_key=reader(["x"]), ask=asker(["y", ""]), out=lambda m: None)
     assert prof["window_title"] == "Madden Custom" and prof["formation_order"] == ["A", "B"]
-    assert prof["delays"]["key"] == 0.3 and prof["delays"]["delete_wait"] == 0.2
+    assert prof["delays"]["key"] == 0.3 and prof["delays"]["remove_wait"] == 0.3
 
 
-def test_calibrated_profile_feeds_the_macro(tmp_path, data=None):
+def test_calibrated_profile_unlocks_live_run(tmp_path, data=None):
     path = tmp_path / "p.json"
-    read, ask, out, _ = _scripted(GOOD)
-    cal.run_calibration(path, read_key=read, ask=ask, out=out)
-    assert mb.load_profile(path)["calibrated"] is True
+    cal.run_calibration(path, read_key=reader(["x"]), ask=asker(["y", ""]), out=lambda m: None)
+    prof = mb.load_profile(path)
+    assert prof["calibrated"] is True and prof["unverified"] == []
 
 
 @pytest.mark.parametrize("seq,name", [(("\r",), "enter"), ((" ",), "space"), (("\x08",), "backspace"),
@@ -224,9 +357,9 @@ def test_msvcrt_translation(seq, name):
 
 def test_cli_calibrate_command(tmp_path, monkeypatch):
     path = tmp_path / "p.json"
-    keys = iter(GOOD)
+    keys, answers = iter(["x"]), iter(["y", ""])
     monkeypatch.setattr(cal, "default_reader", lambda ask=input: (lambda label: next(keys)))
-    monkeypatch.setattr("builtins.input", lambda prompt="": "")
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
     assert main(["calibrate", "--profile", str(path)]) == 0
     assert json.loads(path.read_text())["calibrated"] is True
 

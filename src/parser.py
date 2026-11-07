@@ -290,3 +290,17 @@ def playbook_display_name(slug: str) -> str:
     if slug == "multiple-d":
         return "Multiple D"
     return " ".join(w.capitalize() for w in slug.split("-"))
+
+
+_RE_GROUP_WORD = re.compile(r"^(goal\s*line|nickel|dime|dollar|quarter|prevent)\s+(.+)$", re.I)
+_RE_GROUP_NUM = re.compile(r"^(\d+(?:-\d+)*)\s+(.+)$")
+
+
+def split_formation_name(name: str) -> tuple[str, str]:
+    """('Nickel', '2-4 Dbl Mug') / ('3-4', 'Under'): the in-game formation group (LCTRL) and set (LSHIFT)."""
+    n = clean_text(name)
+    m = _RE_GROUP_WORD.match(n) or _RE_GROUP_NUM.match(n)
+    if not m:
+        return n, n
+    head = m.group(1)
+    return (head.title() if head[0].isalpha() else head), m.group(2)

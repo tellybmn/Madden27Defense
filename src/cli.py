@@ -155,8 +155,8 @@ def cmd_inject(args) -> int:
         profile = mb.load_profile(Path(args.profile))
         if args.order_file:
             profile["formation_order"] = [l.strip() for l in Path(args.order_file).read_text().splitlines() if l.strip()]
-        plan = mb.build_plan(data, profile)
-        verified = mb.verify_plan(plan, profile, data, Path(args.cheat_sheet))
+        plan = mb.build_plan(data, profile, args.prune_limit)
+        verified = mb.verify_plan(plan, profile, data, Path(args.cheat_sheet), args.prune_limit)
     except (mb.MacroError, OSError, KeyError) as e:
         console.print(f"[red]{e}[/]")
         return 2
@@ -168,7 +168,9 @@ def cmd_inject(args) -> int:
     if not args.run:
         backend = mb.DryRunBackend(profile["window_title"])
         mb.run_plan(plan, profile, backend, sleep=lambda s: None)
-        note = "" if profile["calibrated"] else " (profile not calibrated yet: run `python cli.py calibrate`)"
+        todo = [*(["not calibrated"] if not profile["calibrated"] else []),
+                *([f"unverified keys: {', '.join(profile['unverified'])}"] if profile["unverified"] else [])]
+        note = f" (live run blocked until `python cli.py calibrate`: {'; '.join(todo)})" if todo else ""
         console.print(f"[green]Dry run OK[/], no input sent{note}.")
         return 0
     for line in plan.preconditions + ["Assumptions: " + " | ".join(mb.ASSUMPTIONS)]:
@@ -179,7 +181,7 @@ def cmd_inject(args) -> int:
     import time
     try:
         backend = mb.DirectInputBackend(profile["killswitch"])
-        console.print(f"Starting in {args.start_delay}s: click into Madden now. Press {profile['killswitch'].upper()} to abort.")
+        console.print(f"Starting in {args.start_delay}s: switch to Madden (MY PLAYBOOK tab) now. Press {profile['killswitch'].upper()} to abort.")
         time.sleep(args.start_delay)
         sent = mb.run_plan(plan, profile, backend, delay_scale=args.delay_scale, live=True)
     except mb.MacroError as e:
@@ -312,6 +314,7 @@ def main(argv=None) -> int:
     mode = s.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", help="build and verify the plan, send nothing (default)")
     mode.add_argument("--run", action="store_true", help="send real input (Windows, calibrated profile required)")
+    s.add_argument("--prune-limit", type=int, help="test plan: only remove the first N sets, bind no audibles")
     s.add_argument("--yes", action="store_true", help="skip the YES confirmation before a live run")
     s.add_argument("--start-delay", type=float, default=10.0)
     s.add_argument("--delay-scale", type=float, default=1.0, help="multiply all delays (e.g. 1.5 for a slow PC)")

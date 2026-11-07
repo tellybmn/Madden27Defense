@@ -1,17 +1,15 @@
-"""Keyboard macro that applies the built playbook through Madden's Creation Center menus.
+"""Keyboard macro that applies the built playbook through Madden 27's Creation Center (PC).
 
-The plan is fully automatic (zero prompts). It rests on this model of the UI, which could NOT be verified
-against the real game from the build environment, so every assumption is listed in ``ASSUMPTIONS`` and printed
-before a live run:
-  * the formation list is a vertical list; one NAV_DOWN moves to the next row;
-  * the in-game order is the huddle.gg order (override with ``formation_order`` in the profile);
-  * deleting = DELETE, wait 200 ms, CONFIRM, wait 300 ms; the cursor then rests on the row that slid up;
-  * a formation's play list is alphabetical; the cursor starts on the first play when it is opened;
-  * an audible is set by highlighting the play, pressing ASSIGN_AUDIBLE, then the slot's face-button key
-    (slot 1 top / 2 left / 3 right / 4 bottom).
-``simulate_plan`` replays the plan against exactly this model and ``verify_plan`` proves it reproduces the
-cheat sheet, so the plan is internally consistent even though the model itself is unverified.
-Only keyboard input is sent (pydirectinput); no game memory or files are touched.
+UI model (from the on-screen control hints; see ASSUMPTIONS for the parts still inferred):
+  * Tabs, left to right: AUDIBLES, MY PLAYBOOK, ALL PLAYS, MY GAMEPLAN; Z / C switch tabs.
+  * MY PLAYBOOK / AUDIBLES select a formation GROUP with LCTRL (Nickel, Dime, 3-4, 4-3 ...) and a SET within it
+    with LSHIFT (2-4, 2-4 Dbl Mug, Over Wide ...).
+  * Prune: on MY PLAYBOOK, select the set and press E to remove all of its plays; an empty set is gone.
+  * Audibles: on AUDIBLES, arrow to the play and press the slot hotkey (top E, left Z, right C, bottom = calibrated).
+The plan is built closed-loop against ``UIModel`` (every key press is applied to the model while planning) and
+``verify_plan`` replays it on a fresh model and checks the result against the cheat sheet. That proves the plan is
+consistent with the model, not that the model matches the game; every inference is listed in ``ASSUMPTIONS`` and
+printed before a live run. Only keyboard input is sent (pydirectinput); no game memory or files are touched.
 """
 from __future__ import annotations
 
@@ -22,21 +20,25 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Callable
 
-from .calibration import KILLSWITCH_VK, PROMPTS
+from .calibration import (CONTEXTS, DEFAULT_ASSUME, DEFAULT_DELAYS, KILLSWITCH_VK, PROMPTS, conflict)
+from .parser import split_formation_name
 
 SLOT_TYPES = ("man_pressure", "sim_pressure", "two_high", "split_match")   # slots 1..4
 SLOT_POSITION = {1: "top", 2: "left", 3: "right", 4: "bottom"}
 SLOT_BUTTON = {1: "Y", 2: "X", 3: "B", 4: "A"}
 REQUIRED_KEYS = [k for k, _, _ in PROMPTS]
-DEFAULT_DELAYS = {"key": 0.15, "menu": 0.8, "section": 1.5, "delete_wait": 0.2, "confirm_wait": 0.3}
+TABS = ("AUDIBLES", "MY PLAYBOOK", "ALL PLAYS", "MY GAMEPLAN")
 
 ASSUMPTIONS = [
-    "Formation list is vertical: 1x NAV_DOWN moves to the next row; the cursor starts on the FIRST row.",
-    "In-game formation order matches huddle.gg (or the profile's formation_order).",
-    "Delete = DELETE, wait 200ms, CONFIRM, wait 300ms; afterwards the cursor rests on the row that slid up.",
-    "A formation's plays are listed alphabetically; the play cursor starts on the first play.",
-    "Audible = highlight play, ASSIGN_AUDIBLE, then slot key (1 top, 2 left, 3 right, 4 bottom).",
-    "An added formation is appended at the end of the list.",
+    "Start on the MY PLAYBOOK tab with the FIRST formation group and its FIRST set selected.",
+    "LCTRL / LSHIFT cycle forward and wrap; changing group selects that group's first set.",
+    "E removes every play of the selected set; the emptied set leaves the cycle and selection lands on the "
+    "next set (wrapping) - unless assume.empty_sets_remain is true.",
+    "In-game group/set order matches huddle.gg (or the profile's formation_order).",
+    "Switching tabs resets the selection to the first group/set - unless assume.tab_resets_selection is false.",
+    "On AUDIBLES a set's plays are listed alphabetically, the play cursor starts on the first play and "
+    "stays on a play after its slot key is pressed.",
+    "The added formation is appended to the end of its group's sets.",
 ]
 
 
@@ -95,17 +97,100 @@ def load_profile(path: Path) -> dict:
     missing = [k for k in REQUIRED_KEYS if not p["keys"].get(k)]
     if missing:
         raise MacroError(f"profile keys not set: {', '.join(missing)} (run `python cli.py calibrate`)")
-    names = [p["keys"][k] for k in REQUIRED_KEYS]
-    if len(set(names)) != len(names):
-        raise MacroError("two actions share the same key; re-run `python cli.py calibrate`")
+    for action in REQUIRED_KEYS:
+        other = conflict(p["keys"], action, p["keys"][action])
+        if other:
+            raise MacroError(f"{action} and {other} share key '{p['keys'][action]}' on the same screen; "
+                             "re-run `python cli.py calibrate`")
     p["delays"] = {**DEFAULT_DELAYS, **p.get("delays", {})}
+    p["assume"] = {**DEFAULT_ASSUME, **p.get("assume", {})}
     p.setdefault("killswitch", "pause")
     p.setdefault("calibrated", False)
+    p.setdefault("unverified", [])
     if p["killswitch"] not in KILLSWITCH_VK:
         raise MacroError(f"killswitch '{p['killswitch']}' unsupported; use one of {', '.join(sorted(KILLSWITCH_VK))}")
-    if p["killswitch"] in names:
+    if p["killswitch"] in p["keys"].values():
         raise MacroError("killswitch key is also bound to a menu action; re-run calibrate")
     return p
+
+
+# ------------------------------------------------------------------ UI model
+class UIModel:
+    """Minimal model of the Creation Center selection state: tab, formation group, set, play cursor."""
+
+    def __init__(self, names: list[str], plays: dict[str, list[str]], assume: dict, tab: str = "MY PLAYBOOK"):
+        self.groups: list[str] = []
+        self.sets: dict[str, list[str]] = {}
+        for n in names:
+            g, s = split_formation_name(n)
+            if g not in self.sets:
+                self.groups.append(g)
+                self.sets[g] = []
+            self.sets[g].append(s)
+        self.plays, self.assume = plays, assume
+        self.tab, self.g, self.s, self.pcur = TABS.index(tab), 0, 0, 0
+        self.removed: list[str] = []
+        self.bindings: dict[str, dict[int, str]] = {}
+
+    @property
+    def current(self) -> tuple[str, str]:
+        return self.groups[self.g], self.sets[self.groups[self.g]][self.s]
+
+    def names(self) -> list[str]:
+        return [f"{g} {s}" for g in self.groups for s in self.sets[g]]
+
+    def locate(self, name: str) -> tuple[str, str]:
+        g, s = split_formation_name(name)
+        if g not in self.sets or s not in self.sets[g]:
+            raise MacroError(f"'{name}' is not in the formation list the macro expects")
+        return g, s
+
+    def apply(self, action: str) -> None:
+        if action in ("tab_left", "tab_right"):
+            self.tab = max(0, min(self.tab + (-1 if action == "tab_left" else 1), len(TABS) - 1))
+            self.pcur = 0
+            if self.assume["tab_resets_selection"]:
+                self.g = self.s = 0
+        elif action == "formation_cycle":
+            self.g, self.s, self.pcur = (self.g + 1) % len(self.groups), 0, 0
+        elif action == "set_cycle":
+            self.s, self.pcur = (self.s + 1) % len(self.sets[self.groups[self.g]]), 0
+        elif action == "remove_all":
+            if TABS[self.tab] != "MY PLAYBOOK":
+                raise MacroError("remove_all pressed outside MY PLAYBOOK")
+            g, s = self.current
+            self.removed.append(f"{g} {s}")
+            if not self.assume["empty_sets_remain"]:
+                self.sets[g].pop(self.s)
+                if not self.sets[g]:
+                    del self.sets[g]
+                    self.groups.pop(self.g)
+                    self.g, self.s = (self.g % len(self.groups) if self.groups else 0), 0
+                else:
+                    self.s %= len(self.sets[g])
+        elif action in ("up", "down"):
+            if TABS[self.tab] == "AUDIBLES":
+                n = len(self.plays.get(" ".join(self.current), []))
+                self.pcur = max(0, min(self.pcur + (1 if action == "down" else -1), max(n - 1, 0)))
+        elif action.startswith("audible_slot_"):
+            if TABS[self.tab] != "AUDIBLES":
+                raise MacroError("audible slot pressed outside AUDIBLES")
+            name = " ".join(self.current)
+            plist = self.plays.get(name)
+            if not plist:
+                raise MacroError(f"audible bound inside '{name}', which is not a kept formation")
+            self.bindings.setdefault(name, {})[int(action[-1])] = plist[self.pcur]
+
+
+def _initial_names(data: dict, profile: dict) -> list[str]:
+    """In-game set list: base order (or the profile override) with added fronts appended to their group."""
+    gb = data["global_budget"]
+    names = list(profile.get("formation_order") or gb["base_order"])
+    for x in gb["added_fronts"]:
+        g = split_formation_name(x["name"])[0]
+        idx = max((i for i, n in enumerate(names) if split_formation_name(n)[0] == g), default=len(names) - 1)
+        names.insert(idx + 1, x["name"])
+    return names
 
 
 # --------------------------------------------------------------------- plan
@@ -114,7 +199,7 @@ class Step:
     kind: str                  # key | wait | section
     value: str = ""            # key name (key) / label (section)
     seconds: float = 0.0
-    action: str = ""           # logical action for key steps (confirm, down, delete, ...)
+    action: str = ""           # logical action for key steps
 
 
 @dataclass
@@ -134,12 +219,14 @@ class Plan:
 
 
 class _Builder:
-    def __init__(self, profile: dict):
-        self.plan, self.keys, self.d = Plan(), profile["keys"], profile["delays"]
-        self.profile = profile
+    """Records steps while applying every key to the model (closed-loop planning)."""
 
-    def key(self, action: str, wait: float | None = None) -> None:
+    def __init__(self, profile: dict, model: UIModel):
+        self.plan, self.keys, self.d, self.model = Plan(), profile["keys"], profile["delays"], model
+
+    def press(self, action: str, wait: float | None = None) -> None:
         self.plan.steps.append(Step("key", self.keys[action], self.d["key"] if wait is None else wait, action))
+        self.model.apply(action)
 
     def wait(self, seconds: float) -> None:
         self.plan.steps.append(Step("wait", seconds=seconds))
@@ -147,142 +234,108 @@ class _Builder:
     def section(self, label: str) -> None:
         self.plan.steps.append(Step("section", label))
 
-    def move(self, cur: int, target: int) -> int:
-        """Relative grid navigation: |delta| presses of NAV_DOWN (or NAV_UP)."""
-        for _ in range(abs(target - cur)):
-            self.key("down" if target > cur else "up")
-        return target
+    def goto(self, name: str) -> None:
+        """Cycle LCTRL to the target group, then LSHIFT to the target set."""
+        g, s = self.model.locate(name)
+        for _ in range(len(self.model.groups)):
+            if self.model.groups[self.model.g] == g:
+                break
+            self.press("formation_cycle")
+        for _ in range(len(self.model.sets[g])):
+            if self.model.sets[g][self.model.s] == s:
+                break
+            self.press("set_cycle")
+        if self.model.current != (g, s):
+            raise MacroError(f"could not reach '{name}'")
 
-    def delete_row(self) -> None:
-        """The fixed delete loop: DELETE -> 200ms -> CONFIRM -> 300ms."""
-        self.key("delete", wait=0.0)
-        self.wait(self.d["delete_wait"])
-        self.key("confirm", wait=0.0)
-        self.wait(self.d["confirm_wait"])
-
-    def custom_or(self, name: str, default: Callable[[], None]) -> None:
-        seq = self.profile.get("sequences", {}).get(name)
-        if not seq:
-            default()
-            return
-        for item in seq:
-            if item.startswith("wait:"):
-                self.wait(float(item[5:]))
-            else:
-                self.key(item)
-
-    def enter_formation(self) -> None:
-        self.key("confirm", wait=0.0)
-        self.wait(self.d["menu"])
-
-    def exit_formation(self) -> None:
-        self.key("back", wait=0.0)
-        self.wait(self.d["menu"])
+    def scroll_to(self, index: int) -> None:
+        """Relative play-list navigation."""
+        while self.model.pcur != index:
+            self.press("down" if index > self.model.pcur else "up")
 
 
-def build_plan(data: dict, profile: dict) -> Plan:
-    """Compile the zero-prompt plan: prune the unneeded fronts, then bind 4 audibles per kept front."""
+def build_plan(data: dict, profile: dict, prune_limit: int | None = None) -> Plan:
+    """Compile the zero-prompt plan: prune the unneeded sets on MY PLAYBOOK, then bind 4 audibles per kept set.
+
+    ``prune_limit=N`` builds a short test plan that only removes the first N sets (no audibles), to check the
+    UI model against the real game before the full run."""
     gb = data.get("global_budget")
     if not gb or "base_order" not in gb or any("in_game_plays" not in f for f in data["formations"]):
         raise MacroError("playbook JSON lacks list-order data; rebuild with `build --base vikings`")
-    order = list(profile.get("formation_order") or gb["base_order"])
+    names = _initial_names(data, profile)
     pruned = list(gb["pruned"])
-    added = [x["name"] for x in gb["added_fronts"]]
-    unknown = [n for n in pruned if n not in order]
+    unknown = [n for n in pruned if n not in names]
     if unknown:
         raise MacroError(f"formations to prune not in the formation order: {unknown}")
-
-    b = _Builder(profile)
+    plays = {f["name"]: f["in_game_plays"] for f in data["formations"]}
+    model = UIModel(names, plays, profile["assume"])
+    b = _Builder(profile, model)
     b.plan.preconditions = [
         *[f"Add '{x['name']}' (from {', '.join(x['from'])}) to the playbook before the run." for x in gb["added_fronts"]],
-        "Open the Creation Center defensive formation list with the cursor on the FIRST formation.",
-        f"The macro will DELETE {len(pruned)} formations: " + ", ".join(pruned),
+        "Open Creation Center > MY PLAYBOOK with the FIRST formation group and its FIRST set selected.",
+        f"The macro will REMOVE ALL PLAYS from {len(pruned)} sets: " + ", ".join(pruned),
     ]
 
-    b.section(f"prune {len(pruned)} formation(s)")
-    rows, cur = list(order) + added, 0      # the added front is already appended when the run starts
-    for name in order:                     # ascending: each delete only shifts rows that are still ahead
-        if name in pruned:
-            idx = rows.index(name)
-            cur = b.move(cur, idx)
-            b.delete_row()
-            rows.pop(idx)                  # cursor stays on this index (the next row slid up)
-            cur = min(idx, len(rows) - 1)  # ...or the new last row if the deleted one was last
+    order = {n: i for i, n in enumerate(names)}
+    targets = sorted(pruned, key=order.get)[:prune_limit]
+    if prune_limit is not None:
+        b.plan.preconditions.append(f"TEST PLAN: only the first {len(targets)} removal(s); no audibles are bound.")
+    b.section(f"prune {len(targets)} set(s) on MY PLAYBOOK")
+    for name in targets:
+        b.goto(name)
+        b.press("remove_all", wait=b.d["remove_wait"])
+    if prune_limit is not None:
+        return b.plan
 
-    b.section("bind audibles")
-    order_idx = {n: i for i, n in enumerate(rows)}
-    for f in sorted(data["formations"], key=lambda f: order_idx[f["name"]]):
-        cur = b.move(cur, order_idx[f["name"]])
-        b.custom_or("enter_formation", b.enter_formation)
-        pcur = 0
+    b.section("bind audibles on AUDIBLES")
+    b.press("tab_left", wait=b.d["menu"])             # MY PLAYBOOK -> AUDIBLES
+    kept = [n for n in model.names() if n in plays]
+    for f in kept:
+        b.goto(f)
+        fm = next(x for x in data["formations"] if x["name"] == f)
+        todo = []
         for slot, t in enumerate(SLOT_TYPES, start=1):
-            play = f["audibles"][t]
-            if play not in f["in_game_plays"]:
-                raise MacroError(f"{f['name']}: audible play '{play}' is not in the in-game play list")
-            pcur = b.move(pcur, f["in_game_plays"].index(play))
-            b.key("assign_audible")
-            b.key(f"audible_slot_{slot}", wait=b.d["menu"])
-        b.custom_or("exit_formation", b.exit_formation)
+            play = fm["audibles"][t]
+            if play not in fm["in_game_plays"]:
+                raise MacroError(f"{f}: audible play '{play}' is not in the in-game play list")
+            todo.append((fm["in_game_plays"].index(play), slot))
+        for idx, slot in sorted(todo):               # ascending list position = fewest scroll presses
+            b.scroll_to(idx)
+            b.press(f"audible_slot_{slot}", wait=b.d["menu"])
         b.wait(b.d["section"] / 3)
     return b.plan
 
 
-# ---------------------------------------------------------------- simulation
 def simulate_plan(plan: Plan, profile: dict, data: dict) -> dict:
-    """Replay the plan against the documented UI model; returns final list and audible bindings."""
-    gb = data["global_budget"]
-    rows = list(profile.get("formation_order") or gb["base_order"]) + [x["name"] for x in gb["added_fronts"]]
-    plays = {f["name"]: f["in_game_plays"] for f in data["formations"]}
-    cursor, inside, pcur, pending_delete, pending_assign = 0, None, 0, False, None
-    bindings: dict[str, dict[int, str]] = {}
-    for s in (s for s in plan.steps if s.kind == "key"):
-        a = s.action
-        n = len(plays.get(inside, [])) if inside else len(rows)
-        if n == 0:
-            raise MacroError(f"plan navigates an empty list ('{inside or 'formations'}')")
-        if a in ("down", "up"):
-            delta = 1 if a == "down" else -1
-            if inside:
-                pcur = max(0, min(pcur + delta, n - 1))
-            else:
-                cursor = max(0, min(cursor + delta, n - 1))
-        elif a == "delete":
-            pending_delete = True
-        elif a == "confirm":
-            if pending_delete:
-                rows.pop(cursor)
-                cursor = min(cursor, len(rows) - 1)
-                pending_delete = False
-            elif inside is None:
-                inside, pcur = rows[cursor], 0
-        elif a == "back":
-            inside = None
-        elif a == "assign_audible":
-            pending_assign = True
-        elif a.startswith("audible_slot_") and pending_assign:
-            if inside is None or inside not in plays:
-                raise MacroError("plan assigns an audible outside a kept formation")
-            bindings.setdefault(inside, {})[int(a[-1])] = plays[inside][pcur]
-            pending_assign = False
-    return {"list": rows, "bindings": bindings}
+    """Replay the plan on a fresh model; returns the final set list, removed sets and audible bindings."""
+    model = UIModel(_initial_names(data, profile), {f["name"]: f["in_game_plays"] for f in data["formations"]},
+                    profile["assume"])
+    for s in plan.steps:
+        if s.kind == "key":
+            model.apply(s.action)
+    return {"list": model.names(), "removed": model.removed, "bindings": model.bindings}
 
 
-def verify_plan(plan: Plan, profile: dict, data: dict, sheet_path: Path | None = None) -> str:
-    """Prove the plan yields exactly the cheat-sheet audibles and the intended formation list."""
+def verify_plan(plan: Plan, profile: dict, data: dict, sheet_path: Path | None = None,
+                prune_limit: int | None = None) -> str:
+    """Prove the plan removes exactly the pruned sets and yields exactly the cheat-sheet audibles."""
     gb = data["global_budget"]
     sim = simulate_plan(plan, profile, data)
-    keep = [n for n in (profile.get("formation_order") or gb["base_order"]) if n not in gb["pruned"]] \
-        + [x["name"] for x in gb["added_fronts"]]
-    if sim["list"] != keep:
-        raise MacroError(f"plan leaves the wrong formation list: {sim['list']}")
-    want = expected_bindings(data)
-    if sim["bindings"] != want:
+    if prune_limit is not None:
+        names = _initial_names(data, profile)
+        want = sorted(gb["pruned"], key=names.index)[:prune_limit]
+        if sim["removed"] != want or sim["bindings"]:
+            raise MacroError("test plan does not remove exactly the first sets")
+        return f"test plan: {len(want)} set(s) emptied, no audibles"
+    if sorted(sim["removed"]) != sorted(gb["pruned"]):
+        raise MacroError(f"plan removes the wrong sets: {sorted(set(sim['removed']) ^ set(gb['pruned']))}")
+    if sim["bindings"] != expected_bindings(data):
         raise MacroError("plan binds different audibles than the playbook JSON")
     if sheet_path is not None:
         sheet = parse_cheat_sheet(Path(sheet_path).read_text())
         if {n: {s: p for s, (_, p) in v.items()} for n, v in sheet.items()} != sim["bindings"]:
             raise MacroError("plan does not match the cheat sheet")
-    return f"{sum(len(v) for v in sim['bindings'].values())} audibles bound, {len(gb['pruned'])} deleted, {len(sim['list'])} kept"
+    return f"{sum(len(v) for v in sim['bindings'].values())} audibles bound, {len(sim['removed'])} sets emptied"
 
 
 # ------------------------------------------------------------------- runner
@@ -343,6 +396,8 @@ def run_plan(plan: Plan, profile: dict, backend: Backend, *, delay_scale: float 
     """Execute the plan. Raises Aborted / FocusLost; returns number of key presses."""
     if live and not profile.get("calibrated"):
         raise MacroError("profile is not calibrated; run `python cli.py calibrate`")
+    if live and profile.get("unverified"):
+        raise MacroError(f"unverified keys remain: {', '.join(profile['unverified'])}; run `python cli.py calibrate`")
     title, presses = profile["window_title"], 0
     for step in plan.steps:
         if backend.abort_requested():

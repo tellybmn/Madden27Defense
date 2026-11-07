@@ -1,0 +1,37 @@
+{
+ "preconditions": [
+  "Add 'Nickel 3-3 Swap Dbl Mug' (from Jacksonville Jaguars, Multiple D) to the playbook before the run.",
+  "Open Creation Center > MY PLAYBOOK with the FIRST formation group and its FIRST set selected.",
+  "The macro will REMOVE ALL PLAYS from 23 sets: 2-4-5 Over Wide, 3-3-5 3 High Penny, 3-4 Even, 3-4 Over, 3-4 Over Ed, 3-4 Over Solid, 3-4 Tite 5 Tech, 4-2-5 3 High, 4-3 Even 6-1, 4-3 Odd Leo, Dime 1-4, Dime 1-4 Dbl Mug, Dime 2-3 Single Mug, Goal Line 5-3, Goal Line 6-2, Goal Line Pinch, Nickel 2-4 Load Dbl Mug, Nickel 2-4 Load Mug, Nickel 2-4 Single Mug, Nickel 2-4 Swap Dbl Mug, Nickel 2-4 Wide, Nickel 3-3 Odd, Prevent 3 Deep",
+  "TEST PLAN: only the first 2 removal(s); no audibles are bound."
+ ],
+ "assumptions": [
+  "Start on the MY PLAYBOOK tab with the FIRST formation group and its FIRST set selected.",
+  "LCTRL / LSHIFT cycle forward and wrap; changing group selects that group's first set.",
+  "E removes every play of the selected set; the emptied set leaves the cycle and selection lands on the next set (wrapping) - unless assume.empty_sets_remain is true.",
+  "In-game group/set order matches huddle.gg (or the profile's formation_order).",
+  "Switching tabs resets the selection to the first group/set - unless assume.tab_resets_selection is false.",
+  "On AUDIBLES a set's plays are listed alphabetically, the play cursor starts on the first play and stays on a play after its slot key is pressed.",
+  "The added formation is appended to the end of its group's sets."
+ ],
+ "steps": [
+  {
+   "kind": "section",
+   "value": "prune 2 set(s) on MY PLAYBOOK",
+   "seconds": 0.0,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "e",
+   "seconds": 0.3,
+   "action": "remove_all"
+  },
+  {
+   "kind": "key",
+   "value": "e",
+   "seconds": 0.3,
+   "action": "remove_all"
+  }
+ ]
+}
