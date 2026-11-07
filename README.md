@@ -23,3 +23,16 @@ python cli.py scrape --teams vikings,seahawks,jaguars,ravens  # live (rate limit
 
 Caveats: live-site selectors are modeled, not verified against huddle.gg / madden.tools; the offline
 catalog is illustrative, not real playbook data; the audible button layout is a suggested default.
+
+## Constraint hierarchy
+
+| Tier | Meaning | Limits (`src/optimizer.py`) |
+|---|---|---|
+| 1. Engine caps | What Madden's custom-playbook editor allows in total | `MAX_TOTAL_PERSONNEL=15`, `MAX_TOTAL_FRONTS=73`, `MAX_TOTAL_PLAYS=750`, `MAX_PLAYS_PER_FRONT=75` |
+| 2. Tactical active set | The small in-game menu the optimizer selects | `ACTIVE_MAX_FORMATIONS=6`, `ACTIVE_MAX_PLAYS=350`, each formation <= 75 plays |
+
+The base-playbook foundation (`FOUNDATIONS`; Vikings = 9 personnel / 41 fronts / 475 plays, leaving 6 / 32 / 275)
+consists of user-supplied in-game counts, not scraped values. Tier 1 is checked on the worst case where the whole
+base playbook is kept and the hybrid fronts and plays are layered on. `data/REPORT_LIVE.md` shows which base fronts are
+retained, which hybrid fronts are added and which are pruned from the active set. The scrape lists 28 Vikings fronts
+and 436 plays, which differs from the 41/475 foundation.

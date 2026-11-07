@@ -1,5 +1,12 @@
 """Playbook synthesizer: isomorphism clustering + constrained knapsack / set-cover selection.
 
+Two constraint tiers (do not confuse them)
+  GLOBAL engine limits - what the Madden custom-playbook editor allows in total:
+     <=15 personnel, <=73 fronts, <=750 plays, <=75 plays per front. Usage is measured on the
+     worst case "keep the whole base playbook and add the hybrid fronts/plays" (see FOUNDATIONS).
+  TACTICAL active set - the in-game menu filter this optimizer selects:
+     <=6 formations, <=350 rotation plays, each formation <=75 plays.
+
 Pipeline
   1. Cluster formations across playbooks by pre-snap alignment isomorphism
      (canonical formation key: aliases like 'Double'/'Dbl.' collapse).
@@ -38,6 +45,29 @@ FORMATION_ALIASES = {
 def is_spread_slot(key: str) -> bool:
     """Spread/empty (10, 01) slot: Dollar 3-2, any 'Dime 3-2 ...' variant, or Dime 1-4 Dbl Mug."""
     return key in SPREAD_OPTIONS or key.startswith("dime-3-2")
+
+# ---- Tier 1: Madden global custom-playbook engine hard caps
+MAX_TOTAL_PERSONNEL = 15
+MAX_TOTAL_FRONTS = 73
+MAX_TOTAL_PLAYS = 750
+MAX_PLAYS_PER_FRONT = 75
+
+# ---- Tier 2: tactical active-set defaults (in-game menu filter)
+ACTIVE_MAX_FORMATIONS = 6
+ACTIVE_MAX_PLAYS = 350
+
+
+@dataclass(frozen=True)
+class Foundation:
+    """In-game usage of the base playbook. User-supplied counts (not derived from the scrape)."""
+    playbook: str
+    personnel: int
+    fronts: int
+    plays: int
+
+
+FOUNDATIONS = {"Minnesota Vikings": Foundation("Minnesota Vikings", personnel=9, fronts=41, plays=475)}
+
 ENTROPY_MIN = 0.45
 FAMILY_BONUS = 3.0
 ENTROPY_WEIGHT = 12.0
@@ -252,6 +282,7 @@ class PlaybookResult:
     objective: float
     formations: list[SelectedFormation]
     constraints: list[tuple[str, bool, str]]
+    budget: dict | None = None
 
     @property
     def total_plays(self) -> int:
@@ -261,7 +292,9 @@ class PlaybookResult:
         return {
             "base": self.base, "style": self.style, "objective": round(self.objective, 3),
             "total_formations": len(self.formations), "total_plays": self.total_plays,
+            "constraint_active": {"formations": ACTIVE_MAX_FORMATIONS, "plays": ACTIVE_MAX_PLAYS},
             "constraints": [{"name": n, "ok": ok, "detail": d} for n, ok, d in self.constraints],
+            "global_budget": self.budget,
             "formations": [{
                 "name": f.name, "key": f.key, "set": f.set_name, "front": f.front_type,
                 "personnel": list(f.personnel), "disguise_entropy": round(f.entropy, 3),
@@ -291,11 +324,12 @@ def _score(combo: list[Candidate]) -> float:
 
 
 def solve(clusters: list[Cluster], *, base: str | None = None, style: str = "flores-macdonald",
-          max_formations: int = 6, max_plays: int = 350, entropy_min: float = ENTROPY_MIN) -> PlaybookResult:
+          max_formations: int = ACTIVE_MAX_FORMATIONS, max_plays: int = ACTIVE_MAX_PLAYS,
+          entropy_min: float = ENTROPY_MIN) -> PlaybookResult:
     if style not in STYLES:
         raise InfeasibleError(f"unknown style {style!r}; choose from {', '.join(STYLES)}")
     weights = STYLES[style]
-    cap = max(len(AUDIBLE_TYPES), max_plays // max_formations)
+    cap = min(MAX_PLAYS_PER_FRONT, max(len(AUDIBLE_TYPES), max_plays // max_formations))
 
     cands = {c.cluster.key: c for c in _candidates(clusters, weights, base, cap)}
     # C4 (audible completeness) + C2 (disguise entropy for sub-package sets)
@@ -340,8 +374,44 @@ def solve(clusters: list[Cluster], *, base: str | None = None, style: str = "flo
 
     sel = [_to_selected(c) for c in sorted(best_combo, key=lambda c: (c.cluster.info.set_name, c.cluster.key))]
     res = PlaybookResult(base, style, best[0], sel, [])
+    res.budget = global_budget(base, clusters, sel)
     res.constraints = verify(res, max_formations, max_plays, entropy_min)
     return res
+
+
+def global_budget(base: str | None, clusters: list[Cluster], sel: list[SelectedFormation]) -> dict | None:
+    """Tier-1 accounting: base foundation + hybrid additions vs the engine caps; retained/added/pruned fronts."""
+    found = FOUNDATIONS.get(base) if base else None
+    if found is None:
+        return None
+    base_clusters = {c.key: c for c in clusters if base in c.sources}
+    sel_keys = {f.key for f in sel}
+    retained = [f for f in sel if f.key in base_clusters]
+    added = [f for f in sel if f.key not in base_clusters]
+    # a play is new to the base playbook when the base playbook does not have it in that front
+    sel_clusters = {c.key: c for c in clusters if c.key in sel_keys}
+    added_plays = 0
+    for f in sel:
+        for p in f.plays:
+            if f.key not in base_clusters or base not in sel_clusters[f.key].plays[slugify(p.name)].sources:
+                added_plays += 1
+    base_sets = {c.info.set_name for c in base_clusters.values()}
+    new_personnel = len({f.set_name for f in added} - base_sets)
+    pruned = sorted(c.info.formation_name for k, c in base_clusters.items() if k not in sel_keys)
+    return {
+        "base": base, "foundation": {"personnel": found.personnel, "fronts": found.fronts, "plays": found.plays},
+        "caps": {"personnel": MAX_TOTAL_PERSONNEL, "fronts": MAX_TOTAL_FRONTS, "plays": MAX_TOTAL_PLAYS,
+                 "plays_per_front": MAX_PLAYS_PER_FRONT},
+        "remaining": {"personnel": MAX_TOTAL_PERSONNEL - found.personnel, "fronts": MAX_TOTAL_FRONTS - found.fronts,
+                      "plays": MAX_TOTAL_PLAYS - found.plays},
+        "added": {"personnel": new_personnel, "fronts": len(added), "plays": added_plays},
+        "totals_if_base_kept": {"personnel": found.personnel + new_personnel, "fronts": found.fronts + len(added),
+                                "plays": found.plays + added_plays},
+        "scraped_base_fronts": len(base_clusters),
+        "retained": [{"name": f.name, "plays": len(f.plays)} for f in retained],
+        "added_fronts": [{"name": f.name, "plays": len(f.plays), "from": f.sources} for f in added],
+        "pruned": pruned,
+    }
 
 
 def _to_selected(c: Candidate) -> SelectedFormation:
@@ -355,10 +425,20 @@ def _to_selected(c: Candidate) -> SelectedFormation:
 def verify(res: PlaybookResult, max_formations=6, max_plays=350, entropy_min=ENTROPY_MIN) -> list[tuple[str, bool, str]]:
     keys = {f.key for f in res.formations}
     checks = [
-        ("C1 formations <= cap", len(res.formations) <= max_formations, f"{len(res.formations)}/{max_formations}"),
-        ("C1 plays <= cap", res.total_plays <= max_plays, f"{res.total_plays}/{max_plays}"),
+        ("T-active formations <= cap", len(res.formations) <= max_formations, f"{len(res.formations)}/{max_formations}"),
+        ("T-active rotation plays <= cap", res.total_plays <= max_plays, f"{res.total_plays}/{max_plays}"),
     ]
-    sub = [f for f in res.formations if f.set_name in SUB_SETS]
+    biggest = max(res.formations, key=lambda f: len(f.plays))
+    checks.append(("G-engine plays per front <= %d" % MAX_PLAYS_PER_FRONT, len(biggest.plays) <= MAX_PLAYS_PER_FRONT,
+                   f"largest: {biggest.name} ({len(biggest.plays)})"))
+    b = res.budget
+    if b:
+        t = b["totals_if_base_kept"]
+        for label, key, cap in (("personnel", "personnel", MAX_TOTAL_PERSONNEL), ("fronts", "fronts", MAX_TOTAL_FRONTS),
+                                ("plays", "plays", MAX_TOTAL_PLAYS)):
+            checks.append((f"G-engine total {label} <= {cap}", t[key] <= cap,
+                           f"{b['foundation'][key]} base + {b['added'][key]} added = {t[key]}"))
+    sub = [f for f in res.formations if f.set_name in SUB_SETS]  # tactical disguise rule
     low = [f.name for f in sub if f.entropy < entropy_min]
     checks.append(("C2 disguise entropy (nickel/dime/dollar)", not low,
                    "all >= %.2f" % entropy_min if not low else "below threshold: " + ", ".join(low)))

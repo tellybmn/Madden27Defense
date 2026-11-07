@@ -154,3 +154,20 @@ def test_live_3_4_variants_count_as_five_fronts():
     for n in ("3-4 Even", "3-4 Over", "3-4 Under", "3-4 Tite 5 Tech", "5-2 Normal", "4-3 Even 6-1"):
         assert infer_formation(n).is_five_front, n
     assert not infer_formation("4-3 Under").is_five_front
+
+
+def test_engine_caps_and_budget_accounting(clusters):
+    r = opt.solve(clusters, base="Minnesota Vikings")
+    assert (opt.MAX_TOTAL_PERSONNEL, opt.MAX_TOTAL_FRONTS, opt.MAX_TOTAL_PLAYS, opt.MAX_PLAYS_PER_FRONT) == (15, 73, 750, 75)
+    assert max(len(f.plays) for f in r.formations) <= opt.MAX_PLAYS_PER_FRONT
+    b = r.budget
+    assert b["remaining"] == {"personnel": 6, "fronts": 32, "plays": 275}
+    assert b["totals_if_base_kept"]["fronts"] == 41 + b["added"]["fronts"]
+    names = {f.name for f in r.formations}
+    assert names == {x["name"] for x in b["retained"]} | {x["name"] for x in b["added_fronts"]}
+    assert not names & set(b["pruned"])
+    assert any(n.startswith("G-engine") for n, _, _ in r.constraints)
+
+
+def test_no_budget_without_foundation(clusters):
+    assert opt.solve(clusters, base=None).budget is None

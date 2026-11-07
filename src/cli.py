@@ -154,6 +154,32 @@ def cmd_report(args) -> int:
           "## Test results", "", f"`{summary}` (exit code {proc.returncode})", "",
           "## Constraint checks", "", "| Result | Constraint | Detail |", "|---|---|---|"]
     md += [f"| {'PASS' if c['ok'] else 'FAIL'} | {c['name']} | {c['detail']} |" for c in data["constraints"]]
+    gb = data.get("global_budget")
+    if gb:
+        t, r, a, cp = gb["totals_if_base_kept"], gb["remaining"], gb["added"], gb["caps"]
+        md += ["", "## Constraint hierarchy", "",
+               "Two tiers are enforced. **Tier 1 (Madden engine caps)** bounds the whole custom playbook; "
+               "**Tier 2 (tactical active set)** is the small in-game menu this optimizer selects.", "",
+               "| Tier | Limit | Value | Result |", "|---|---|---|---|",
+               f"| 1 Engine | Personnel | <= {cp['personnel']} | {t['personnel']} (base {gb['foundation']['personnel']} + {a['personnel']}) |",
+               f"| 1 Engine | Fronts | <= {cp['fronts']} | {t['fronts']} (base {gb['foundation']['fronts']} + {a['fronts']}; {r['fronts']} slots available) |",
+               f"| 1 Engine | Total plays | <= {cp['plays']} | {t['plays']} (base {gb['foundation']['plays']} + {a['plays']}; {r['plays']} available) |",
+               f"| 1 Engine | Plays per front | <= {cp['plays_per_front']} | largest {max(len(f['plays']) for f in data['formations'])} |",
+               f"| 2 Tactical | Active formations | <= {data['constraint_active']['formations']} | {data['total_formations']} |",
+               f"| 2 Tactical | Active rotation plays | <= {data['constraint_active']['plays']} | {data['total_plays']} |",
+               f"| 2 Tactical | Plays per formation | <= {cp['plays_per_front']} | all pass |", "",
+               f"Totals assume the **entire** {gb['base']} base playbook is kept and the hybrid additions are layered on "
+               f"(worst case). Base counts ({gb['foundation']['personnel']} personnel / {gb['foundation']['fronts']} fronts / "
+               f"{gb['foundation']['plays']} plays) are user-supplied in-game numbers; the huddle.gg scrape lists "
+               f"{gb['scraped_base_fronts']} {gb['base']} fronts, so retained/pruned below are relative to those.", "",
+               f"### Base playbook mapping ({gb['base']})", "",
+               "| Status | Front | Plays | Source |", "|---|---|---|---|"]
+        md += [f"| Retained (active) | {x['name']} | {x['plays']} | {gb['base']} base |" for x in gb["retained"]]
+        md += [f"| Added (hybrid) | {x['name']} | {x['plays']} | {', '.join(x['from'])} |" for x in gb["added_fronts"]]
+        md += ["", f"**Pruned from the active set ({len(gb['pruned'])} scraped base fronts, still within the engine cap if kept):** "
+               + ", ".join(gb["pruned"]), "",
+               f"Hybrid additions use {a['fronts']} of the {r['fronts']} remaining front slots and {a['plays']} of the "
+               f"{r['plays']} remaining play slots."]
     md += ["", "## Selected formations", "",
            "| Formation | Set | Personnel | Plays | Disguise entropy | Source playbooks |", "|---|---|---|---|---|---|"]
     md += [f"| {f['name']} | {f['set']} | {'/'.join(f['personnel'])} | {len(f['plays'])} | "
