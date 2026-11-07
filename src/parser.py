@@ -143,7 +143,7 @@ def play_type(p: PlayInfo) -> str:
 
 
 # --------------------------------------------------------------- formations
-FIVE_FRONT_KEYS = frozenset({"3-4-bear", "5-2", "4-3-even-6-1"})
+FIVE_FRONT_KEYS = frozenset({"3-4-bear", "5-2", "5-2-normal", "4-3-even-6-1"})
 SUB_SETS = frozenset({"Nickel", "Dime", "Dollar", "Quarter"})
 
 

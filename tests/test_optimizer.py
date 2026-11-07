@@ -108,3 +108,42 @@ def test_optimality_vs_brute_force(clusters):
                 and ks & set(opt.SPREAD_OPTIONS) and sum(len(c.plays) for c in combo) <= 350):
             best = max(best, opt._score(list(combo)))
     assert r.objective == pytest.approx(best)
+
+
+# ---- live-nomenclature aliases and relaxed audible slots
+def _rec(name):
+    from src.parser import classify_play
+    return opt.PlayRec(name, classify_play(name))
+
+
+def test_spread_slot_accepts_dime_3_2_variants():
+    assert opt.is_spread_slot("dollar-3-2") and opt.is_spread_slot("dime-1-4-dbl-mug")
+    assert opt.is_spread_slot("dime-3-2-swap-dbl-mug") and not opt.is_spread_slot("dime-2-3")
+
+
+def test_swap_dbl_mug_aliases_to_swap_mug_slot():
+    from src.parser import infer_formation
+    assert opt.FORMATION_ALIASES[infer_formation("Nickel 3-3 Swap Dbl Mug").key] == "nickel-3-3-swap-mug"
+    assert infer_formation("5-2 Normal").is_five_front
+
+
+def test_relaxed_slot_tiers():
+    assert opt.slot_tier("man_pressure", _rec("MID BLITZ 0")) == 0
+    assert opt.slot_tier("man_pressure", _rec("COVER 1 HOLE")) == 2
+    assert opt.slot_tier("sim_pressure", _rec("NICKEL SIM 2")) == 0
+    assert opt.slot_tier("sim_pressure", _rec("FIRE 3")) == 1
+    assert opt.slot_tier("sim_pressure", _rec("COFFEE HOUSE 3 SEAM")) == 1
+    assert opt.slot_tier("two_high", _rec("COVER 3 CLOUD")) == 1
+    assert opt.slot_tier("split_match", _rec("COVER 3 MATCH")) == 1
+    assert opt.slot_tier("split_match", _rec("COVER 2 INVERT")) == 2
+    assert opt.slot_tier("split_match", _rec("COVER 4 PALMS")) == 0
+    assert opt.slot_tier("sim_pressure", _rec("PINCH DOG 2")) is None     # run plugs never fill slots
+
+
+def test_assignment_needs_four_distinct_plays():
+    plays = [_rec(n) for n in ("MID BLITZ 0", "NICKEL SIM 2", "TAMPA 2")]
+    assert opt.audible_assignment(plays) is None             # Tampa 2 can't fill both 2-high and match
+    plays.append(_rec("COVER 2 INVERT"))
+    a = opt.audible_assignment(plays)
+    assert a["two_high"][0].name == "TAMPA 2" and a["split_match"][0].name == "COVER 2 INVERT"
+    assert a["split_match"][1] == 2

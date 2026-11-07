@@ -14,10 +14,11 @@ Pipeline
 from __future__ import annotations
 
 import math
+import re
 import sqlite3
 from collections import Counter
 from dataclasses import dataclass, field
-from itertools import combinations
+from itertools import combinations, product
 
 from .parser import SUB_SETS, FormationInfo, PlayInfo, infer_formation, play_type, slugify
 
@@ -26,7 +27,17 @@ ALL_TYPES = ("man_pressure", "blitz", "sim_pressure", "two_high", "split_match",
              "cover3", "man_coverage", "run_plug")
 
 BASE_REQUIRED = ("nickel-2-4-dbl-mug", "nickel-3-3-swap-mug")      # 11 personnel
-SPREAD_OPTIONS = ("dollar-3-2", "dime-1-4-dbl-mug")                # 10 / 01 personnel
+SPREAD_OPTIONS = ("dollar-3-2", "dime-1-4-dbl-mug")                # 10 / 01 personnel (exact slots)
+
+# Live huddle.gg nomenclature -> architectural slot keys (applied when clustering).
+FORMATION_ALIASES = {
+    "nickel-3-3-swap-dbl-mug": "nickel-3-3-swap-mug",
+}
+
+
+def is_spread_slot(key: str) -> bool:
+    """Spread/empty (10, 01) slot: Dollar 3-2, any 'Dime 3-2 ...' variant, or Dime 1-4 Dbl Mug."""
+    return key in SPREAD_OPTIONS or key.startswith("dime-3-2")
 ENTROPY_MIN = 0.45
 FAMILY_BONUS = 3.0
 ENTROPY_WEIGHT = 12.0
@@ -72,7 +83,7 @@ class Cluster:
 
     @property
     def has_all_audibles(self) -> bool:
-        return set(AUDIBLE_TYPES) <= self.types
+        return audible_assignment(self.plays.values()) is not None
 
     @property
     def entropy(self) -> float:
@@ -93,6 +104,72 @@ def disguise_entropy(info: FormationInfo, plays) -> float:
         return 0.0
     h = -sum(c / total * math.log2(c / total) for c in cnt.values())
     return (h / math.log2(len(ALL_TYPES))) * info.alignment_factor
+
+
+# ------------------------------------------------------- audible slot rules
+# Each slot accepts plays in preference tiers (0 = purest form of the slot). A formation is
+# audible-complete when four DISTINCT plays can fill the four slots.
+_RE_CREEPER_ALIAS = re.compile(r"\bfire\s*\d\b|\bcoffee\s*house\b")
+TIER_NOTES: dict[str, dict[int, str]] = {
+    "man_pressure": {0: "Cover 0 blitz", 1: "Cover 1 man blitz", 2: "Cover 1 man (no added rusher)"},
+    "sim_pressure": {0: "4-man sim pressure", 1: "creeper alias (Fire N / Coffee House)"},
+    "two_high": {0: "Tampa 2 / Cover 2 family", 1: "Cover 3 Cloud"},
+    "split_match": {0: "Cover 4 / Cover 6 / Cover 9 match", 1: "Cover 3 Match", 2: "fallback: 2 Invert"},
+}
+
+
+def slot_tier(slot: str, p: PlayRec) -> int | None:
+    """Preference tier of play `p` for audible `slot`, or None if it cannot fill the slot."""
+    i, n = p.info, p.name.lower()
+    if i.is_run_plug:
+        return None
+    cover3 = i.coverage_family == "Cover 3 Sky/Buzz/Cloud"
+    if slot == "man_pressure":
+        if p.ptype == "man_pressure":
+            return 0
+        if i.coverage_family == "Cover 1":
+            return 1 if i.is_blitz else 2
+    elif slot == "sim_pressure":
+        if i.is_sim_pressure:
+            return 0
+        if _RE_CREEPER_ALIAS.search(n):
+            return 1
+    elif slot == "two_high":
+        if p.ptype == "two_high":
+            return 0
+        if cover3 and not i.is_blitz and "cloud" in n:
+            return 1
+    elif slot == "split_match":
+        if p.ptype == "split_match":
+            return 0
+        if cover3 and not i.is_blitz and not i.is_sim_pressure and "match" in n:
+            return 1
+        if p.ptype == "two_high" and "invert" in n:
+            return 2
+    return None
+
+
+def audible_assignment(plays) -> dict[str, tuple[PlayRec, int]] | None:
+    """Best distinct-play assignment to the four audible slots (min total tier, then max value)."""
+    plays = list(plays)
+    cands: list[list[tuple[int, PlayRec]]] = []
+    for s in AUDIBLE_TYPES:
+        lst = sorted(((t, p) for p in plays if (t := slot_tier(s, p)) is not None),
+                     key=lambda x: (x[0], -x[1].value, x[1].name))[:6]
+        if not lst:
+            return None
+        cands.append(lst)
+    best, best_key = None, None
+    for combo in product(*cands):
+        names = [p.name for _, p in combo]
+        if len(set(names)) < len(names):
+            continue
+        key = (sum(t for t, _ in combo), -sum(p.value for _, p in combo), tuple(names))
+        if best_key is None or key < best_key:
+            best, best_key = combo, key
+    if best is None:
+        return None
+    return {s: (p, t) for s, (t, p) in zip(AUDIBLE_TYPES, best)}
 
 
 # ----------------------------------------------------------------- loading
@@ -116,7 +193,8 @@ def load_clusters(conn: sqlite3.Connection) -> list[Cluster]:
     clusters: dict[str, Cluster] = {}
     for r in rows:
         info = infer_formation(r["formation_name"])
-        c = clusters.setdefault(info.key, Cluster(info.key, info))
+        key = FORMATION_ALIASES.get(info.key, info.key)
+        c = clusters.setdefault(key, Cluster(key, info))
         c.sources.add(r["pb"])
         if r["play_name"] is None:
             continue
@@ -134,14 +212,10 @@ def value_plays(c: Cluster, weights: dict[str, float], base: str | None) -> None
         p.value = v * (BASE_AFFINITY if base and base in p.sources else 1.0)
 
 
-def trim_plays(c: Cluster, cap: int) -> list[PlayRec]:
-    """Top-`cap` plays by value, always keeping the best play of each audible type."""
+def trim_plays(c: Cluster, cap: int, must_keep=()) -> list[PlayRec]:
+    """Top-`cap` plays by value, always keeping the plays assigned to audible slots."""
     ranked = sorted(c.plays.values(), key=lambda p: (-p.value, p.name))
-    keep = {}
-    for t in AUDIBLE_TYPES:
-        best = next((p for p in ranked if p.ptype == t), None)
-        if best:
-            keep[best.name] = best
+    keep = {p.name: p for p in must_keep}
     for p in ranked:
         if len(keep) >= cap:
             break
@@ -154,6 +228,7 @@ class Candidate:
     cluster: Cluster
     plays: list[PlayRec]
     value: float
+    audibles: dict[str, tuple[PlayRec, int]] | None = None
 
 
 @dataclass
@@ -167,6 +242,7 @@ class SelectedFormation:
     sources: list[str]
     plays: list[PlayRec]
     audibles: dict[str, PlayRec]
+    audible_tiers: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass
@@ -191,6 +267,7 @@ class PlaybookResult:
                 "personnel": list(f.personnel), "disguise_entropy": round(f.entropy, 3),
                 "source_playbooks": f.sources,
                 "audibles": {t: p.name for t, p in f.audibles.items()},
+                "audible_notes": {t: TIER_NOTES[t][f.audible_tiers[t]] for t in f.audibles},
                 "plays": [{"name": p.name, "type": p.ptype, "coverage": p.info.coverage_family,
                            "rush": p.info.rush_count} for p in f.plays],
             } for f in self.formations],
@@ -201,9 +278,10 @@ def _candidates(clusters, weights, base, cap) -> list[Candidate]:
     out = []
     for c in clusters:
         value_plays(c, weights, base)
-        plays = trim_plays(c, cap)
+        aud = audible_assignment(c.plays.values())
+        plays = trim_plays(c, cap, [p for p, _ in aud.values()] if aud else ())
         ent = disguise_entropy(c.info, plays)
-        out.append(Candidate(c, plays, sum(p.value for p in plays) + ENTROPY_WEIGHT * ent))
+        out.append(Candidate(c, plays, sum(p.value for p in plays) + ENTROPY_WEIGHT * ent, aud))
     return out
 
 
@@ -222,18 +300,18 @@ def solve(clusters: list[Cluster], *, base: str | None = None, style: str = "flo
     cands = {c.cluster.key: c for c in _candidates(clusters, weights, base, cap)}
     # C4 (audible completeness) + C2 (disguise entropy for sub-package sets)
     elig = {k: c for k, c in cands.items()
-            if c.cluster.has_all_audibles
+            if c.audibles is not None
             and (c.cluster.info.set_name not in SUB_SETS or disguise_entropy(c.cluster.info, c.plays) >= entropy_min)}
 
     missing = [k for k in BASE_REQUIRED if k not in elig]
     if missing:
         raise InfeasibleError(f"11-personnel requirement unmet; missing/ineligible: {', '.join(missing)}")
     heavy = [c for c in elig.values() if c.cluster.info.is_five_front]
-    spread = [elig[k] for k in SPREAD_OPTIONS if k in elig]
+    spread = [c for k, c in elig.items() if is_spread_slot(k)]
     if not heavy:
         raise InfeasibleError("heavy-set requirement unmet: no eligible 5-front (3-4 Bear / 5-2 / 4-3 Even 6-1)")
     if not spread:
-        raise InfeasibleError("spread-set requirement unmet: need Dollar 3-2 or Dime 1-4 Dbl Mug")
+        raise InfeasibleError("spread-set requirement unmet: need Dollar 3-2, a Dime 3-2 variant or Dime 1-4 Dbl Mug")
 
     best: tuple[float, int, list[str]] | None = None
     best_combo: list[Candidate] = []
@@ -267,12 +345,11 @@ def solve(clusters: list[Cluster], *, base: str | None = None, style: str = "flo
 
 
 def _to_selected(c: Candidate) -> SelectedFormation:
-    aud = {}
-    for t in AUDIBLE_TYPES:
-        aud[t] = next(p for p in c.plays if p.ptype == t)  # first = highest value
     i = c.cluster.info
     return SelectedFormation(c.cluster.key, i.formation_name, i.set_name, i.front_type, i.personnel_groups,
-                             disguise_entropy(i, c.plays), sorted(c.cluster.sources), c.plays, aud)
+                             disguise_entropy(i, c.plays), sorted(c.cluster.sources), c.plays,
+                             {s: p for s, (p, _) in c.audibles.items()},
+                             {s: t for s, (_, t) in c.audibles.items()})
 
 
 def verify(res: PlaybookResult, max_formations=6, max_plays=350, entropy_min=ENTROPY_MIN) -> list[tuple[str, bool, str]]:
@@ -289,8 +366,8 @@ def verify(res: PlaybookResult, max_formations=6, max_plays=350, entropy_min=ENT
     checks.append(("C3 heavy (12/21/22) -> 5-front", bool(five), ", ".join(five) or "none"))
     checks.append(("C3 base (11) -> Nickel 2-4 Dbl Mug + Nickel 3-3 Swap Mug",
                    all(k in keys for k in BASE_REQUIRED), "present" if all(k in keys for k in BASE_REQUIRED) else "missing"))
-    sp = [k for k in SPREAD_OPTIONS if k in keys]
-    checks.append(("C3 spread (10/01) -> Dollar 3-2 or Dime 1-4 Dbl Mug", bool(sp), ", ".join(sp) or "none"))
-    bad = [f.name for f in res.formations if not set(AUDIBLE_TYPES) <= {p.ptype for p in f.plays}]
-    checks.append(("C4 audible completeness (4 play-types each)", not bad, "all formations complete" if not bad else ", ".join(bad)))
+    sp = sorted(k for k in keys if is_spread_slot(k))
+    checks.append(("C3 spread (10/01) -> Dollar 3-2 / Dime 3-2 variant / Dime 1-4 Dbl Mug", bool(sp), ", ".join(sp) or "none"))
+    bad = [f.name for f in res.formations if audible_assignment(f.plays) is None]
+    checks.append(("C4 audible completeness (4 distinct slot plays each)", not bad, "all formations complete" if not bad else ", ".join(bad)))
     return checks
