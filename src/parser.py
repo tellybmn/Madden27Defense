@@ -143,7 +143,11 @@ def play_type(p: PlayInfo) -> str:
 
 
 # --------------------------------------------------------------- formations
-FIVE_FRONT_KEYS = frozenset({"3-4-bear", "5-2", "5-2-normal", "4-3-even-6-1"})
+# Live huddle.gg has no "3-4 Bear"; its 3-4 Even/Over/Under/Tite 5 Tech are accepted as 5-front stand-ins.
+FIVE_FRONT_KEYS = frozenset({
+    "3-4-bear", "5-2", "5-2-normal", "4-3-even-6-1",
+    "3-4-even", "3-4-over", "3-4-under", "3-4-tite-5-tech",
+})
 SUB_SETS = frozenset({"Nickel", "Dime", "Dollar", "Quarter"})
 
 

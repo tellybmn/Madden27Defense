@@ -147,3 +147,10 @@ def test_assignment_needs_four_distinct_plays():
     a = opt.audible_assignment(plays)
     assert a["two_high"][0].name == "TAMPA 2" and a["split_match"][0].name == "COVER 2 INVERT"
     assert a["split_match"][1] == 2
+
+
+def test_live_3_4_variants_count_as_five_fronts():
+    from src.parser import infer_formation
+    for n in ("3-4 Even", "3-4 Over", "3-4 Under", "3-4 Tite 5 Tech", "5-2 Normal", "4-3 Even 6-1"):
+        assert infer_formation(n).is_five_front, n
+    assert not infer_formation("4-3 Under").is_five_front

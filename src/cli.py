@@ -22,13 +22,13 @@ DEFAULT_OUT = str(Path(__file__).resolve().parents[1] / "data" / "custom_playboo
 
 # Quick-audible slots. Button mapping is a suggested default; remap to your controller layout.
 SLOTS = {
-    "man_pressure": ("1", "Y / Triangle", "All-out man pressure (Cover 0 / cross-dog)",
+    "man_pressure": ("1", "Y / Triangle", "Man / all-out pressure (Cover 0 blitz or Cover 1 Hole / man blitz)",
                      "Hold the common pre-snap look (mug / 2-high); call after last motion"),
-    "sim_pressure": ("2", "X / Square", "Creeper / sim pressure (4 rush, zone drop)",
+    "sim_pressure": ("2", "X / Square", "Creeper / sim pressure (4-man sim, Fire 3, Coffee House 3)",
                      "Same look; slot/LB fires, DE drops to hook; no safety rotation"),
-    "two_high": ("3", "B / Circle", "Disguised 2-high / invert (Tampa 2, Cover 2 Invert)",
+    "two_high": ("3", "B / Circle", "2-high / disguise zone (Tampa 2, Cover 2 Invert, Cover 3 Cloud)",
                  "Keep safeties deep; walk a safety down late only if audible is Invert"),
-    "split_match": ("4", "A / Cross", "Split-field match (Cover 4 Palms / Quarters / Cover 6)",
+    "split_match": ("4", "A / Cross", "Match / base check (Cover 4/6/9, Cover 3 Match, 2 Invert fallback)",
                     "Shell stays 2-high; match rules decide field/boundary reads post-snap"),
 }
 
@@ -104,12 +104,12 @@ def cmd_export(args) -> int:
         return 1
     data = json.loads(p.read_text())
     t = Table(title="Quick-audible setup (suggested button layout -- remap as needed)")
-    for c in ("Formation", "Slot", "Button", "Audible type", "Play", "Pre-snap note"):
+    for c in ("Formation", "Slot", "Button", "Audible type", "Play", "Fills as", "Pre-snap note"):
         t.add_column(c)
     for f in data["formations"]:
         for typ, play in f["audibles"].items():
             slot, btn, label, note = SLOTS[typ]
-            t.add_row(f["name"], slot, btn, label, play, note)
+            t.add_row(f["name"], slot, btn, label, play, f.get("audible_notes", {}).get(typ, ""), note)
         t.add_section()
     console.print(t)
     return 0
@@ -136,10 +136,10 @@ def cmd_report(args) -> int:
            f"{f['disguise_entropy']} | {', '.join(f['source_playbooks'])} |" for f in data["formations"]]
     md += ["", "## Audible matrices (4 plays per formation)", ""]
     for f in data["formations"]:
-        md += [f"### {f['name']}", "", "| Slot | Button (suggested) | Audible type | Play |", "|---|---|---|---|"]
+        md += [f"### {f['name']}", "", "| Slot | Button (suggested) | Audible type | Play | Fills as |", "|---|---|---|---|---|"]
         for typ, play in f["audibles"].items():
             slot, btn, label, _ = SLOTS[typ]
-            md.append(f"| {slot} | {btn} | {label} | {play} |")
+            md.append(f"| {slot} | {btn} | {label} | {play} | {f.get('audible_notes', {}).get(typ, '')} |")
         md.append("")
     Path(args.out).write_text("\n".join(md))
     console.print(f"Report written to {args.out}")
