@@ -1,0 +1,1142 @@
+{
+  "base": "Minnesota Vikings",
+  "style": "flores-macdonald",
+  "objective": 396.662,
+  "total_formations": 6,
+  "total_plays": 153,
+  "constraints": [
+    {
+      "name": "C1 formations <= cap",
+      "ok": true,
+      "detail": "6/6"
+    },
+    {
+      "name": "C1 plays <= cap",
+      "ok": true,
+      "detail": "153/350"
+    },
+    {
+      "name": "C2 disguise entropy (nickel/dime/dollar)",
+      "ok": true,
+      "detail": "all >= 0.45"
+    },
+    {
+      "name": "C3 heavy (12/21/22) -> 5-front",
+      "ok": true,
+      "detail": "3-4 Under"
+    },
+    {
+      "name": "C3 base (11) -> Nickel 2-4 Dbl Mug + Nickel 3-3 Swap Mug",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "C3 spread (10/01) -> Dollar 3-2 / Dime 3-2 variant / Dime 1-4 Dbl Mug",
+      "ok": true,
+      "detail": "dime-3-2-rush"
+    },
+    {
+      "name": "C4 audible completeness (4 distinct slot plays each)",
+      "ok": true,
+      "detail": "all formations complete"
+    }
+  ],
+  "formations": [
+    {
+      "name": "3-4 Under",
+      "key": "3-4-under",
+      "set": "Base",
+      "front": "3-4 Under",
+      "personnel": [
+        "12",
+        "21",
+        "22"
+      ],
+      "disguise_entropy": 0.303,
+      "source_playbooks": [
+        "Baltimore Ravens",
+        "Jacksonville Jaguars",
+        "Miami Dolphins",
+        "Minnesota Vikings",
+        "Seattle Seahawks"
+      ],
+      "audibles": {
+        "man_pressure": "SAW BLITZ 1",
+        "sim_pressure": "FS FIRE 3",
+        "two_high": "2 INVERT HARD FLAT",
+        "split_match": "COVER 4 QUARTERS"
+      },
+      "audible_notes": {
+        "man_pressure": "Cover 1 man blitz",
+        "sim_pressure": "creeper alias (Fire N / Coffee House)",
+        "two_high": "Tampa 2 / Cover 2 family",
+        "split_match": "Cover 4 / Cover 6 / Cover 9 match"
+      },
+      "plays": [
+        {
+          "name": "2 INVERT HARD FLAT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 INVERT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 4 QUARTERS",
+          "type": "split_match",
+          "coverage": "Cover 4 Match/Palms",
+          "rush": 4
+        },
+        {
+          "name": "COVER 6",
+          "type": "split_match",
+          "coverage": "Cover 6/9",
+          "rush": 4
+        },
+        {
+          "name": "FS FIRE 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "FS FIRE I",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "MLB CROSS FIRE 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "SAW BLITZ 1",
+          "type": "blitz",
+          "coverage": "Cover 1",
+          "rush": 5
+        },
+        {
+          "name": "WEAK BLITZ 1",
+          "type": "blitz",
+          "coverage": "Cover 1",
+          "rush": 5
+        },
+        {
+          "name": "WEAK BLITZ 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "DBL SAFETY BLITZ",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "FS FIRE 1",
+          "type": "blitz",
+          "coverage": "Cover 1",
+          "rush": 5
+        },
+        {
+          "name": "COVER 3 HARD FLAT",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 MATCH",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 SKY",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 HOLE",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "PINCH BUCK O",
+          "type": "run_plug",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "1 ROBBER PRESS",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 QB SPY",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        }
+      ]
+    },
+    {
+      "name": "Dime 2-3",
+      "key": "dime-2-3",
+      "set": "Dime",
+      "front": "2-3",
+      "personnel": [
+        "10",
+        "01"
+      ],
+      "disguise_entropy": 0.588,
+      "source_playbooks": [
+        "Baltimore Ravens",
+        "Minnesota Vikings",
+        "Seattle Seahawks"
+      ],
+      "audibles": {
+        "man_pressure": "EDGE BLITZ 0",
+        "sim_pressure": "FIELD SIM 3",
+        "two_high": "COVER 2 INVERT",
+        "split_match": "COVER 4 PALMS"
+      },
+      "audible_notes": {
+        "man_pressure": "Cover 0 blitz",
+        "sim_pressure": "4-man sim pressure",
+        "two_high": "Tampa 2 / Cover 2 family",
+        "split_match": "Cover 4 / Cover 6 / Cover 9 match"
+      },
+      "plays": [
+        {
+          "name": "EDGE BLITZ 0",
+          "type": "man_pressure",
+          "coverage": "Cover 0",
+          "rush": 6
+        },
+        {
+          "name": "FIELD SIM 3",
+          "type": "sim_pressure",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "FS WILL BLITZ 0",
+          "type": "man_pressure",
+          "coverage": "Cover 0",
+          "rush": 6
+        },
+        {
+          "name": "NICKEL SIM 2",
+          "type": "sim_pressure",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "SIM PRESSURE 3",
+          "type": "sim_pressure",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 INVERT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 MATCH",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 4 PALMS",
+          "type": "split_match",
+          "coverage": "Cover 4 Match/Palms",
+          "rush": 4
+        },
+        {
+          "name": "COVER 4 QUARTERS",
+          "type": "split_match",
+          "coverage": "Cover 4 Match/Palms",
+          "rush": 4
+        },
+        {
+          "name": "COVER 6 SHOW 2",
+          "type": "split_match",
+          "coverage": "Cover 6/9",
+          "rush": 4
+        },
+        {
+          "name": "COVER 6 WILLIE",
+          "type": "split_match",
+          "coverage": "Cover 6/9",
+          "rush": 4
+        },
+        {
+          "name": "COVER 9 SHOW 2",
+          "type": "split_match",
+          "coverage": "Cover 6/9",
+          "rush": 4
+        },
+        {
+          "name": "DBL SAFETY BLITZ",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "EDGE BLITZ 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "NICKEL 2 TRAP",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "OVER STORM BRAVE",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "OVERLOAD 3 PRESS",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "ROLL COVER 2 INVERT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "TAMPA 2",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 BUZZ MATCH",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 MATCH",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 SAMMIE",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 SKY",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "ROLL 23 CLOUD",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "ROLL COVER 3 CLOUD",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "1 DOUBLE SLOT",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "1 DOUBLE TE",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "1 DOUBLE WR1",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "1 DOUBLE WR2",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 HOLE",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 ROBBER",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 MAN",
+          "type": "man_coverage",
+          "coverage": "Cover 2 Man",
+          "rush": 4
+        },
+        {
+          "name": "BRACKET 9 SWITCH",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "BRACKET SWITCH WILLIE",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "DOUBLE BRACKET",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "DOUBLE BRACKET SWITCH",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "DOUBLE TE",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        }
+      ]
+    },
+    {
+      "name": "Dime 3-2 Rush",
+      "key": "dime-3-2-rush",
+      "set": "Dime",
+      "front": "3-2 Rush",
+      "personnel": [
+        "10",
+        "01"
+      ],
+      "disguise_entropy": 0.527,
+      "source_playbooks": [
+        "Minnesota Vikings",
+        "Seattle Seahawks"
+      ],
+      "audibles": {
+        "man_pressure": "COVER 1 CONTAIN SPY",
+        "sim_pressure": "MUG SIM PRESSURE",
+        "two_high": "COVER 2 HARD FLAT",
+        "split_match": "COVER 4 PALMS"
+      },
+      "audible_notes": {
+        "man_pressure": "Cover 1 man (no added rusher)",
+        "sim_pressure": "4-man sim pressure",
+        "two_high": "Tampa 2 / Cover 2 family",
+        "split_match": "Cover 4 / Cover 6 / Cover 9 match"
+      },
+      "plays": [
+        {
+          "name": "MUG SIM PRESSURE",
+          "type": "sim_pressure",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "SS SIM PRESSURE 3",
+          "type": "sim_pressure",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 HARD FLAT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 ROLL",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 4 PALMS",
+          "type": "split_match",
+          "coverage": "Cover 4 Match/Palms",
+          "rush": 4
+        },
+        {
+          "name": "COVER 4 QUARTERS",
+          "type": "split_match",
+          "coverage": "Cover 4 Match/Palms",
+          "rush": 4
+        },
+        {
+          "name": "COVER 6",
+          "type": "split_match",
+          "coverage": "Cover 6/9",
+          "rush": 4
+        },
+        {
+          "name": "DB BLITZ",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "DBL SAFETY BLITZ",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "DIME BLITZ 2",
+          "type": "blitz",
+          "coverage": "Tampa 2",
+          "rush": 5
+        },
+        {
+          "name": "FOX FIRE ZONE PRESS",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "FS MIDDLE BLITZ 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "MUG BLITZ TEX 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "SS OVERLOAD 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "TAMPA 2",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 BUZZ MATCH",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 CLOUD",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 CONTAIN SPY",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 ROBBER PRESS",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 MAN",
+          "type": "man_coverage",
+          "coverage": "Cover 2 Man",
+          "rush": 4
+        },
+        {
+          "name": "MUG DT LOOP 1",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        }
+      ]
+    },
+    {
+      "name": "Nickel 2-4",
+      "key": "nickel-2-4",
+      "set": "Nickel",
+      "front": "2-4",
+      "personnel": [
+        "11"
+      ],
+      "disguise_entropy": 0.613,
+      "source_playbooks": [
+        "Baltimore Ravens",
+        "Minnesota Vikings",
+        "Seattle Seahawks"
+      ],
+      "audibles": {
+        "man_pressure": "EDGE BLITZ 0",
+        "sim_pressure": "CROSS SIM 2",
+        "two_high": "2 INVERT LURK",
+        "split_match": "COVER 4 DROP FIELD"
+      },
+      "audible_notes": {
+        "man_pressure": "Cover 0 blitz",
+        "sim_pressure": "4-man sim pressure",
+        "two_high": "Tampa 2 / Cover 2 family",
+        "split_match": "Cover 4 / Cover 6 / Cover 9 match"
+      },
+      "plays": [
+        {
+          "name": "CROSS SIM 2",
+          "type": "sim_pressure",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "EDGE BLITZ 0",
+          "type": "man_pressure",
+          "coverage": "Cover 0",
+          "rush": 6
+        },
+        {
+          "name": "FIELD SIM 3",
+          "type": "sim_pressure",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "FS WILL BLITZ 0",
+          "type": "man_pressure",
+          "coverage": "Cover 0",
+          "rush": 6
+        },
+        {
+          "name": "NICKEL SIM 2",
+          "type": "sim_pressure",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "SHOW SS SIM 2",
+          "type": "sim_pressure",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "SIM PRESSURE 3",
+          "type": "sim_pressure",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "2 INVERT LURK",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 INVERT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 MATCH",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 4 DROP FIELD",
+          "type": "split_match",
+          "coverage": "Cover 4 Match/Palms",
+          "rush": 4
+        },
+        {
+          "name": "COVER 4 PALMS",
+          "type": "split_match",
+          "coverage": "Cover 4 Match/Palms",
+          "rush": 4
+        },
+        {
+          "name": "COVER 4 QUARTERS",
+          "type": "split_match",
+          "coverage": "Cover 4 Match/Palms",
+          "rush": 4
+        },
+        {
+          "name": "COVER 6",
+          "type": "split_match",
+          "coverage": "Cover 6/9",
+          "rush": 4
+        },
+        {
+          "name": "COVER 6 WILLIE",
+          "type": "split_match",
+          "coverage": "Cover 6/9",
+          "rush": 4
+        },
+        {
+          "name": "COVER 9 SHOW 2",
+          "type": "split_match",
+          "coverage": "Cover 6/9",
+          "rush": 4
+        },
+        {
+          "name": "DBL SAFETY BLITZ",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "EDGE BLITZ 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "LB BLITZ 1",
+          "type": "blitz",
+          "coverage": "Cover 1",
+          "rush": 5
+        },
+        {
+          "name": "NICKEL 2 TRAP",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "OVER STORM BRAVE",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "OVERLOAD 3 SEAM",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "ROLL COVER 2 INVERT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "TAMPA 2",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "BUCK SLANT 3",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 BUZZ MATCH",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 CLOUD",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 MATCH",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 SAMMIE",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 SKY",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "ROLL 23 CLOUD",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "ROLL COVER 3 CLOUD",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "1 DOUBLE TE",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "1 DOUBLE WR1",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 CONTAIN",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 HOLE",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 ROBBER",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 2 MAN",
+          "type": "man_coverage",
+          "coverage": "Cover 2 Man",
+          "rush": 4
+        },
+        {
+          "name": "SILVER SHOOT PINCH",
+          "type": "run_plug",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "BRACKET SWITCH WILLIE",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "DOUBLE BRACKET",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "DOUBLE BRACKET SWITCH",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        }
+      ]
+    },
+    {
+      "name": "Nickel 2-4 Dbl Mug",
+      "key": "nickel-2-4-dbl-mug",
+      "set": "Nickel",
+      "front": "2-4",
+      "personnel": [
+        "11"
+      ],
+      "disguise_entropy": 0.802,
+      "source_playbooks": [
+        "Baltimore Ravens",
+        "Minnesota Vikings",
+        "Seattle Seahawks"
+      ],
+      "audibles": {
+        "man_pressure": "MID BLITZ 0",
+        "sim_pressure": "FIELD SIM 3",
+        "two_high": "NICKEL 2 TRAP",
+        "split_match": "COVER 2 INVERT"
+      },
+      "audible_notes": {
+        "man_pressure": "Cover 0 blitz",
+        "sim_pressure": "4-man sim pressure",
+        "two_high": "Tampa 2 / Cover 2 family",
+        "split_match": "fallback: 2 Invert"
+      },
+      "plays": [
+        {
+          "name": "FIELD SIM 3",
+          "type": "sim_pressure",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "MID BLITZ 0",
+          "type": "man_pressure",
+          "coverage": "Cover 0",
+          "rush": 6
+        },
+        {
+          "name": "NICKEL DOG 3 BUZZ",
+          "type": "sim_pressure",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "NICKEL SIM 2",
+          "type": "sim_pressure",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "BLITZ LOOP 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "COVER 2 INVERT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "LB BLITZ 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "NICKEL 2 TRAP",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "NICKEL OVERLOAD 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "SS BLITZ 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "TAMPA 2",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "2 INVERT HARD FLAT",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COFFEE HOUSE 3 SEAM",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 SEAM",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 SKY",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 HOLE",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        }
+      ]
+    },
+    {
+      "name": "Nickel 3-3 Swap Dbl Mug",
+      "key": "nickel-3-3-swap-mug",
+      "set": "Nickel",
+      "front": "3-3 Swap",
+      "personnel": [
+        "11"
+      ],
+      "disguise_entropy": 0.818,
+      "source_playbooks": [
+        "Jacksonville Jaguars",
+        "Multiple D"
+      ],
+      "audibles": {
+        "man_pressure": "BLITZ LOOP 0",
+        "sim_pressure": "CB BENCH SIM 2",
+        "two_high": "NICKEL 2 TRAP",
+        "split_match": "COVER 3 MATCH"
+      },
+      "audible_notes": {
+        "man_pressure": "Cover 0 blitz",
+        "sim_pressure": "4-man sim pressure",
+        "two_high": "Tampa 2 / Cover 2 family",
+        "split_match": "Cover 3 Match"
+      },
+      "plays": [
+        {
+          "name": "BLITZ LOOP 0",
+          "type": "man_pressure",
+          "coverage": "Cover 0",
+          "rush": 6
+        },
+        {
+          "name": "CB BENCH SIM 2",
+          "type": "sim_pressure",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "NICKEL SIM 2",
+          "type": "sim_pressure",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "SS DOG 3",
+          "type": "sim_pressure",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "SS SIM 2",
+          "type": "sim_pressure",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "BLITZ LOOP 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "BLITZ LOOP SIM 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "HOT BLITZ 3",
+          "type": "blitz",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 5
+        },
+        {
+          "name": "MID BLITZ",
+          "type": "blitz",
+          "coverage": "Unknown",
+          "rush": 5
+        },
+        {
+          "name": "NICKEL 2 TRAP",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "SS 2 TRAP",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "TAMPA 2",
+          "type": "two_high",
+          "coverage": "Tampa 2",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 MATCH",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "COVER 3 SKY",
+          "type": "cover3",
+          "coverage": "Cover 3 Sky/Buzz/Cloud",
+          "rush": 4
+        },
+        {
+          "name": "1 DT LB LOOP",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "COVER 1 GAMES",
+          "type": "man_coverage",
+          "coverage": "Cover 1",
+          "rush": 4
+        },
+        {
+          "name": "LB POP O",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        },
+        {
+          "name": "REDZONE DT DROP",
+          "type": "other",
+          "coverage": "Unknown",
+          "rush": 4
+        }
+      ]
+    }
+  ]
+}
