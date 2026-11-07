@@ -1,506 +1,2429 @@
-[
- {
-  "kind": "section",
-  "value": "",
-  "seconds": 0.0,
-  "note": "open editor"
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 1.5,
-  "note": ""
- },
- {
-  "kind": "section",
-  "value": "",
-  "seconds": 0.0,
-  "note": "add 1 hybrid front(s)"
- },
- {
-  "kind": "prompt",
-  "value": "Open the pool for Jacksonville Jaguars, Multiple D and highlight 'Nickel 3-3 Swap Dbl Mug', then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": ""
- },
- {
-  "kind": "section",
-  "value": "",
-  "seconds": 0.0,
-  "note": "prune 23 formation(s)"
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '2-4-5 Over Wide' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '3-3-5 3 High Penny' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '3-4 Even' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '3-4 Over' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '3-4 Over Ed' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '3-4 Over Solid' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '3-4 Tite 5 Tech' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '4-2-5 3 High' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '4-3 Even 6-1' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '4-3 Odd Leo' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Dime 1-4' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Dime 1-4 Dbl Mug' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Dime 2-3 Single Mug' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Goal Line 5-3' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Goal Line 6-2' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Goal Line Pinch' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 2-4 Load Dbl Mug' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 2-4 Load Mug' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 2-4 Single Mug' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 2-4 Swap Dbl Mug' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 2-4 Wide' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 3-3 Odd' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Prevent 3 Deep' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "section",
-  "value": "",
-  "seconds": 0.0,
-  "note": "bind audibles"
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation '3-4 Under' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "[3-4 Under] highlight play 'SAW BLITZ 1' (slot 1 -> Y) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "3-4 Under slot 1=SAW BLITZ 1"
- },
- {
-  "kind": "prompt",
-  "value": "[3-4 Under] highlight play 'FS FIRE 3' (slot 2 -> X) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "3-4 Under slot 2=FS FIRE 3"
- },
- {
-  "kind": "prompt",
-  "value": "[3-4 Under] highlight play '2 INVERT HARD FLAT' (slot 3 -> B) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "3-4 Under slot 3=2 INVERT HARD FLAT"
- },
- {
-  "kind": "prompt",
-  "value": "[3-4 Under] highlight play 'COVER 4 QUARTERS' (slot 4 -> A) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "3-4 Under slot 4=COVER 4 QUARTERS"
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Dime 2-3' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "[Dime 2-3] highlight play 'EDGE BLITZ 0' (slot 1 -> Y) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Dime 2-3 slot 1=EDGE BLITZ 0"
- },
- {
-  "kind": "prompt",
-  "value": "[Dime 2-3] highlight play 'FIELD SIM 3' (slot 2 -> X) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Dime 2-3 slot 2=FIELD SIM 3"
- },
- {
-  "kind": "prompt",
-  "value": "[Dime 2-3] highlight play 'COVER 2 INVERT' (slot 3 -> B) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Dime 2-3 slot 3=COVER 2 INVERT"
- },
- {
-  "kind": "prompt",
-  "value": "[Dime 2-3] highlight play 'COVER 4 PALMS' (slot 4 -> A) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Dime 2-3 slot 4=COVER 4 PALMS"
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Dime 3-2 Rush' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "[Dime 3-2 Rush] highlight play 'COVER 1 CONTAIN SPY' (slot 1 -> Y) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Dime 3-2 Rush slot 1=COVER 1 CONTAIN SPY"
- },
- {
-  "kind": "prompt",
-  "value": "[Dime 3-2 Rush] highlight play 'MUG SIM PRESSURE' (slot 2 -> X) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Dime 3-2 Rush slot 2=MUG SIM PRESSURE"
- },
- {
-  "kind": "prompt",
-  "value": "[Dime 3-2 Rush] highlight play 'COVER 2 HARD FLAT' (slot 3 -> B) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Dime 3-2 Rush slot 3=COVER 2 HARD FLAT"
- },
- {
-  "kind": "prompt",
-  "value": "[Dime 3-2 Rush] highlight play 'COVER 4 PALMS' (slot 4 -> A) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Dime 3-2 Rush slot 4=COVER 4 PALMS"
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 2-4' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 2-4] highlight play 'EDGE BLITZ 0' (slot 1 -> Y) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 2-4 slot 1=EDGE BLITZ 0"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 2-4] highlight play 'CROSS SIM 2' (slot 2 -> X) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 2-4 slot 2=CROSS SIM 2"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 2-4] highlight play '2 INVERT LURK' (slot 3 -> B) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 2-4 slot 3=2 INVERT LURK"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 2-4] highlight play 'COVER 4 DROP FIELD' (slot 4 -> A) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 2-4 slot 4=COVER 4 DROP FIELD"
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 2-4 Dbl Mug' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 2-4 Dbl Mug] highlight play 'MID BLITZ 0' (slot 1 -> Y) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 2-4 Dbl Mug slot 1=MID BLITZ 0"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 2-4 Dbl Mug] highlight play 'FIELD SIM 3' (slot 2 -> X) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 2-4 Dbl Mug slot 2=FIELD SIM 3"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 2-4 Dbl Mug] highlight play 'NICKEL 2 TRAP' (slot 3 -> B) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 2-4 Dbl Mug slot 3=NICKEL 2 TRAP"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 2-4 Dbl Mug] highlight play 'COVER 2 INVERT' (slot 4 -> A) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 2-4 Dbl Mug slot 4=COVER 2 INVERT"
- },
- {
-  "kind": "prompt",
-  "value": "Highlight formation 'Nickel 3-3 Swap Dbl Mug' then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 3-3 Swap Dbl Mug] highlight play 'BLITZ LOOP 0' (slot 1 -> Y) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 3-3 Swap Dbl Mug slot 1=BLITZ LOOP 0"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 3-3 Swap Dbl Mug] highlight play 'CB BENCH SIM 2' (slot 2 -> X) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 3-3 Swap Dbl Mug slot 2=CB BENCH SIM 2"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 3-3 Swap Dbl Mug] highlight play 'NICKEL 2 TRAP' (slot 3 -> B) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 3-3 Swap Dbl Mug slot 3=NICKEL 2 TRAP"
- },
- {
-  "kind": "prompt",
-  "value": "[Nickel 3-3 Swap Dbl Mug] highlight play 'COVER 3 MATCH' (slot 4 -> A) then press ENTER here",
-  "seconds": 0.0,
-  "note": ""
- },
- {
-  "kind": "wait",
-  "value": "",
-  "seconds": 0.8,
-  "note": "Nickel 3-3 Swap Dbl Mug slot 4=COVER 3 MATCH"
- }
-]
+{
+ "preconditions": [
+  "Add 'Nickel 3-3 Swap Dbl Mug' (from Jacksonville Jaguars, Multiple D) to the playbook before the run.",
+  "Open the Creation Center defensive formation list with the cursor on the FIRST formation.",
+  "The macro will DELETE 23 formations: 2-4-5 Over Wide, 3-3-5 3 High Penny, 3-4 Even, 3-4 Over, 3-4 Over Ed, 3-4 Over Solid, 3-4 Tite 5 Tech, 4-2-5 3 High, 4-3 Even 6-1, 4-3 Odd Leo, Dime 1-4, Dime 1-4 Dbl Mug, Dime 2-3 Single Mug, Goal Line 5-3, Goal Line 6-2, Goal Line Pinch, Nickel 2-4 Load Dbl Mug, Nickel 2-4 Load Mug, Nickel 2-4 Single Mug, Nickel 2-4 Swap Dbl Mug, Nickel 2-4 Wide, Nickel 3-3 Odd, Prevent 3 Deep"
+ ],
+ "assumptions": [
+  "Formation list is vertical: 1x NAV_DOWN moves to the next row; the cursor starts on the FIRST row.",
+  "In-game formation order matches huddle.gg (or the profile's formation_order).",
+  "Delete = DELETE, wait 200ms, CONFIRM, wait 300ms; afterwards the cursor rests on the row that slid up.",
+  "A formation's plays are listed alphabetically; the play cursor starts on the first play.",
+  "Audible = highlight play, ASSIGN_AUDIBLE, then slot key (1 top, 2 left, 3 right, 4 bottom).",
+  "An added formation is appended at the end of the list."
+ ],
+ "steps": [
+  {
+   "kind": "section",
+   "value": "prune 23 formation(s)",
+   "seconds": 0.0,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "delete",
+   "seconds": 0.0,
+   "action": "delete"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.2,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.3,
+   "action": ""
+  },
+  {
+   "kind": "section",
+   "value": "bind audibles",
+   "seconds": 0.0,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "y",
+   "seconds": 0.8,
+   "action": "audible_slot_1"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "x",
+   "seconds": 0.8,
+   "action": "audible_slot_2"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "b",
+   "seconds": 0.8,
+   "action": "audible_slot_3"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "a",
+   "seconds": 0.8,
+   "action": "audible_slot_4"
+  },
+  {
+   "kind": "key",
+   "value": "backspace",
+   "seconds": 0.0,
+   "action": "back"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.5,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "y",
+   "seconds": 0.8,
+   "action": "audible_slot_1"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "x",
+   "seconds": 0.8,
+   "action": "audible_slot_2"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "b",
+   "seconds": 0.8,
+   "action": "audible_slot_3"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "a",
+   "seconds": 0.8,
+   "action": "audible_slot_4"
+  },
+  {
+   "kind": "key",
+   "value": "backspace",
+   "seconds": 0.0,
+   "action": "back"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.5,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "y",
+   "seconds": 0.8,
+   "action": "audible_slot_1"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "x",
+   "seconds": 0.8,
+   "action": "audible_slot_2"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "b",
+   "seconds": 0.8,
+   "action": "audible_slot_3"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "a",
+   "seconds": 0.8,
+   "action": "audible_slot_4"
+  },
+  {
+   "kind": "key",
+   "value": "backspace",
+   "seconds": 0.0,
+   "action": "back"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.5,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "y",
+   "seconds": 0.8,
+   "action": "audible_slot_1"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "x",
+   "seconds": 0.8,
+   "action": "audible_slot_2"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "b",
+   "seconds": 0.8,
+   "action": "audible_slot_3"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "a",
+   "seconds": 0.8,
+   "action": "audible_slot_4"
+  },
+  {
+   "kind": "key",
+   "value": "backspace",
+   "seconds": 0.0,
+   "action": "back"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.5,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "y",
+   "seconds": 0.8,
+   "action": "audible_slot_1"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "x",
+   "seconds": 0.8,
+   "action": "audible_slot_2"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "b",
+   "seconds": 0.8,
+   "action": "audible_slot_3"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "a",
+   "seconds": 0.8,
+   "action": "audible_slot_4"
+  },
+  {
+   "kind": "key",
+   "value": "backspace",
+   "seconds": 0.0,
+   "action": "back"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.5,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "enter",
+   "seconds": 0.0,
+   "action": "confirm"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "y",
+   "seconds": 0.8,
+   "action": "audible_slot_1"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "x",
+   "seconds": 0.8,
+   "action": "audible_slot_2"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "b",
+   "seconds": 0.8,
+   "action": "audible_slot_3"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.15,
+   "action": "up"
+  },
+  {
+   "kind": "key",
+   "value": "f",
+   "seconds": 0.15,
+   "action": "assign_audible"
+  },
+  {
+   "kind": "key",
+   "value": "a",
+   "seconds": 0.8,
+   "action": "audible_slot_4"
+  },
+  {
+   "kind": "key",
+   "value": "backspace",
+   "seconds": 0.0,
+   "action": "back"
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.8,
+   "action": ""
+  },
+  {
+   "kind": "wait",
+   "value": "",
+   "seconds": 0.5,
+   "action": ""
+  }
+ ]
+}

@@ -1,18 +1,31 @@
 {
-  "_readme": "UNCALIBRATED TEMPLATE. Fill in keys/sequences/indices for your Madden 27 PC build, then set calibrated=true. Sequence items are key names or 'wait:SECONDS'. Placeholders: {button_key}.",
+  "_readme": "Placeholder keys, calibrated=false. Run `python cli.py calibrate` to record your real keys.",
   "calibrated": false,
   "window_title": "Madden NFL 27",
-  "killswitch": "esc",
-  "keys": {"up": "up", "down": "down", "left": "left", "right": "right", "confirm": "enter", "back": "backspace"},
-  "button_keys": {"Y": "y", "X": "x", "B": "b", "A": "a"},
-  "delays": {"key": 0.15, "menu": 0.8, "section": 1.5},
-  "sequences": {
-    "open_editor": [],
-    "open_audible_editor": [],
-    "delete_formation": [],
-    "add_formation": [],
-    "bind_audible": []
+  "killswitch": "pause",
+  "keys": {
+    "confirm": "enter",
+    "back": "backspace",
+    "up": "up",
+    "down": "down",
+    "left": "left",
+    "right": "right",
+    "tab_left": "q",
+    "tab_right": "e",
+    "delete": "delete",
+    "assign_audible": "f",
+    "audible_slot_1": "y",
+    "audible_slot_2": "x",
+    "audible_slot_3": "b",
+    "audible_slot_4": "a"
   },
-  "formation_index": {},
-  "play_index": {}
+  "delays": {
+    "key": 0.15,
+    "menu": 0.8,
+    "section": 1.5,
+    "delete_wait": 0.2,
+    "confirm_wait": 0.3
+  },
+  "sequences": {},
+  "formation_order": []
 }

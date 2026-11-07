@@ -106,6 +106,7 @@ class Cluster:
     info: FormationInfo
     plays: dict[str, PlayRec] = field(default_factory=dict)
     sources: set[str] = field(default_factory=set)
+    rank: dict[str, int] = field(default_factory=dict)   # playbook -> scrape order (== on-site list order)
 
     @property
     def types(self) -> set[str]:
@@ -216,7 +217,7 @@ def resolve_playbook_name(conn: sqlite3.Connection, base: str | None) -> str | N
 
 def load_clusters(conn: sqlite3.Connection) -> list[Cluster]:
     rows = conn.execute(
-        "SELECT p.name AS pb, f.formation_name, pl.play_name, pl.coverage_family, pl.rush_count, "
+        "SELECT p.name AS pb, f.formation_id AS fid, f.formation_name, pl.play_name, pl.coverage_family, pl.rush_count, "
         "pl.is_sim_pressure, pl.is_blitz, pl.is_run_plug FROM formations f "
         "JOIN playbooks p USING(playbook_id) LEFT JOIN plays pl USING(formation_id) "
         "ORDER BY p.name, f.formation_name, pl.play_name").fetchall()
@@ -226,6 +227,7 @@ def load_clusters(conn: sqlite3.Connection) -> list[Cluster]:
         key = FORMATION_ALIASES.get(info.key, info.key)
         c = clusters.setdefault(key, Cluster(key, info))
         c.sources.add(r["pb"])
+        c.rank[r["pb"]] = min(r["fid"], c.rank.get(r["pb"], r["fid"]))
         if r["play_name"] is None:
             continue
         pi = PlayInfo(r["play_name"], r["coverage_family"], r["rush_count"],
@@ -273,6 +275,8 @@ class SelectedFormation:
     plays: list[PlayRec]
     audibles: dict[str, PlayRec]
     audible_tiers: dict[str, int] = field(default_factory=dict)
+    in_game_source: str = ""                                 # playbook whose version of this front is in-game
+    in_game_plays: list[str] = field(default_factory=list)   # that front's plays, alphabetical (menu order)
 
 
 @dataclass
@@ -299,6 +303,7 @@ class PlaybookResult:
                 "name": f.name, "key": f.key, "set": f.set_name, "front": f.front_type,
                 "personnel": list(f.personnel), "disguise_entropy": round(f.entropy, 3),
                 "source_playbooks": f.sources,
+                "in_game_source": f.in_game_source, "in_game_plays": f.in_game_plays,
                 "audibles": {t: p.name for t, p in f.audibles.items()},
                 "audible_notes": {t: TIER_NOTES[t][f.audible_tiers[t]] for t in f.audibles},
                 "plays": [{"name": p.name, "type": p.ptype, "coverage": p.info.coverage_family,
@@ -311,7 +316,10 @@ def _candidates(clusters, weights, base, cap) -> list[Candidate]:
     out = []
     for c in clusters:
         value_plays(c, weights, base)
-        aud = audible_assignment(c.plays.values())
+        # With a base playbook, audibles must be plays that exist in the in-game version of that front
+        # (the base's, or the donor's for an added front) so they are selectable without adding plays.
+        donor = (base if base in c.sources else sorted(c.sources)[0]) if base else None
+        aud = audible_assignment(p for p in c.plays.values() if donor is None or donor in p.sources)
         plays = trim_plays(c, cap, [p for p, _ in aud.values()] if aud else ())
         ent = disguise_entropy(c.info, plays)
         out.append(Candidate(c, plays, sum(p.value for p in plays) + ENTROPY_WEIGHT * ent, aud))
@@ -373,6 +381,11 @@ def solve(clusters: list[Cluster], *, base: str | None = None, style: str = "flo
         raise InfeasibleError(f"no selection fits within {max_formations} formations / {max_plays} plays")
 
     sel = [_to_selected(c) for c in sorted(best_combo, key=lambda c: (c.cluster.info.set_name, c.cluster.key))]
+    by_key = {c.cluster.key: c.cluster for c in cands.values()}
+    for f in sel:
+        cl = by_key[f.key]
+        f.in_game_source = base if base and base in cl.sources else sorted(cl.sources)[0]
+        f.in_game_plays = sorted((p.name for p in cl.plays.values() if f.in_game_source in p.sources), key=str.lower)
     res = PlaybookResult(base, style, best[0], sel, [])
     res.budget = global_budget(base, clusters, sel)
     res.constraints = verify(res, max_formations, max_plays, entropy_min)
@@ -408,6 +421,7 @@ def global_budget(base: str | None, clusters: list[Cluster], sel: list[SelectedF
         "totals_if_base_kept": {"personnel": found.personnel + new_personnel, "fronts": found.fronts + len(added),
                                 "plays": found.plays + added_plays},
         "scraped_base_fronts": len(base_clusters),
+        "base_order": [c.info.formation_name for c in sorted(base_clusters.values(), key=lambda c: c.rank[base])],
         "retained": [{"name": f.name, "plays": len(f.plays)} for f in retained],
         "added_fronts": [{"name": f.name, "plays": len(f.plays), "from": f.sources} for f in added],
         "pruned": pruned,
@@ -449,5 +463,9 @@ def verify(res: PlaybookResult, max_formations=6, max_plays=350, entropy_min=ENT
     sp = sorted(k for k in keys if is_spread_slot(k))
     checks.append(("C3 spread (10/01) -> Dollar 3-2 / Dime 3-2 variant / Dime 1-4 Dbl Mug", bool(sp), ", ".join(sp) or "none"))
     bad = [f.name for f in res.formations if audible_assignment(f.plays) is None]
+    if res.base:   # only meaningful when applying onto a base playbook
+        checks.append(("G-macro audible plays exist in the in-game front",
+                       all(p.name in f.in_game_plays for f in res.formations for p in f.audibles.values()),
+                       "all 4 per front selectable"))
     checks.append(("C4 audible completeness (4 distinct slot plays each)", not bad, "all formations complete" if not bad else ", ".join(bad)))
     return checks

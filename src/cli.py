@@ -139,34 +139,48 @@ def cmd_export(args) -> int:
     return 0
 
 
+def cmd_calibrate(args) -> int:
+    from . import calibration
+    console.print("Calibration: click this terminal, then press each requested key (Windows captures the key; "
+                  "elsewhere type its name).")
+    calibration.run_calibration(Path(args.profile), read_key=calibration.default_reader(),
+                                ask=input, out=console.print)
+    return 0
+
+
 def cmd_inject(args) -> int:
     from . import macro_builder as mb
     try:
         data = mb.load_inputs(Path(args.playbook), Path(args.cheat_sheet))
         profile = mb.load_profile(Path(args.profile))
+        if args.order_file:
+            profile["formation_order"] = [l.strip() for l in Path(args.order_file).read_text().splitlines() if l.strip()]
         plan = mb.build_plan(data, profile)
+        verified = mb.verify_plan(plan, profile, data, Path(args.cheat_sheet))
     except (mb.MacroError, OSError, KeyError) as e:
         console.print(f"[red]{e}[/]")
         return 2
     if args.plan_out:
         Path(args.plan_out).write_text(plan.to_json())
     n = plan.counts()
-    console.print(f"Plan: {n.get('key', 0)} key presses, {n.get('prompt', 0)} assist prompts, "
-                  f"{n.get('wait', 0)} waits across {n.get('section', 0)} sections")
+    console.print(f"Plan: {n.get('key', 0)} key presses, {n.get('wait', 0)} waits, 0 prompts. "
+                  f"[green]Verified against cheat sheet[/]: {verified}.")
     if not args.run:
         backend = mb.DryRunBackend(profile["window_title"])
         mb.run_plan(plan, profile, backend, sleep=lambda s: None)
-        console.print("[green]Dry run OK[/] (no input sent). Use --run on the PC after calibrating the profile.")
+        note = "" if profile["calibrated"] else " (profile not calibrated yet: run `python cli.py calibrate`)"
+        console.print(f"[green]Dry run OK[/], no input sent{note}.")
         return 0
+    for line in plan.preconditions + ["Assumptions: " + " | ".join(mb.ASSUMPTIONS)]:
+        console.print(f"  - {line}")
+    if not args.yes and input("Type YES to start the live run: ").strip() != "YES":
+        console.print("Cancelled.")
+        return 1
     import time
     try:
-        backend = mb.DirectInputBackend(profile.get("killswitch", "esc"))
-    except mb.MacroError as e:
-        console.print(f"[red]{e}[/]")
-        return 3
-    console.print(f"Starting in {args.start_delay}s: click into Madden now. Press {profile.get('killswitch', 'esc').upper()} to abort.")
-    time.sleep(args.start_delay)
-    try:
+        backend = mb.DirectInputBackend(profile["killswitch"])
+        console.print(f"Starting in {args.start_delay}s: click into Madden now. Press {profile['killswitch'].upper()} to abort.")
+        time.sleep(args.start_delay)
         sent = mb.run_plan(plan, profile, backend, delay_scale=args.delay_scale, live=True)
     except mb.MacroError as e:
         console.print(f"[red]Stopped: {e}[/]")
@@ -177,12 +191,22 @@ def cmd_inject(args) -> int:
 
 def cmd_inspect_saves(args) -> int:
     from . import save_inspector
-    rows = save_inspector.inspect()
+    dirs = save_inspector.candidate_dirs()
+    found, rows = save_inspector.inspect(dirs)
+    for d in dirs:
+        console.print(f"{'[green]found  [/]' if d in found else '[dim]missing[/]'} {d}")
     if not rows:
-        console.print("No Madden NFL 27 folders found under Documents (run this on the PC).")
+        console.print("No Madden NFL 27 files found (run this on the PC).")
         return 1
+    t = Table(title="Madden NFL 27 files (read-only)")
+    for col in ("Ext", "Size (bytes)", "Kind", "First bytes", "Path"):
+        t.add_column(col)
     for r in rows:
-        console.print(f"{r['bytes']:>10}  {r['magic']}  {r['sha256_16']}  {r['path']}")
+        t.add_row(r["ext"], f"{r['bytes']:,}", r["kind"], r["magic"], r["path"])
+    console.print(t)
+    kinds = {k: sum(1 for r in rows if r["kind"] == k) for k in {r["kind"] for r in rows}}
+    console.print(f"Summary: {len(rows)} files; kinds: {kinds}; plaintext/JSON present: "
+                  f"{any(r['kind'] in ('text', 'json?') for r in rows)}")
     return 0
 
 
@@ -274,13 +298,21 @@ def main(argv=None) -> int:
     s.add_argument("--out", help="write the output to this file (markdown format)")
     s.set_defaults(fn=cmd_export)
 
-    s = sub.add_parser("inject", help="apply the playbook via a keyboard macro (dry-run by default)")
+    s = sub.add_parser("calibrate", help="record your keys and write data/macro_profile.json")
     root = Path(__file__).resolve().parents[1] / "data"
+    s.add_argument("--profile", default=str(root / "macro_profile.json"))
+    s.set_defaults(fn=cmd_calibrate)
+
+    s = sub.add_parser("inject", help="apply the playbook via a keyboard macro (dry-run by default)")
     s.add_argument("--playbook", default=str(root / "live_playbook.json"))
     s.add_argument("--cheat-sheet", default=str(root / "AUDIBLES_CHEAT_SHEET.md"))
     s.add_argument("--profile", default=str(root / "macro_profile.json"))
     s.add_argument("--plan-out", help="write the compiled plan as JSON")
-    s.add_argument("--run", action="store_true", help="send real input (Windows, calibrated profile required)")
+    s.add_argument("--order-file", help="text file: in-game formation names top-to-bottom (overrides huddle.gg order)")
+    mode = s.add_mutually_exclusive_group()
+    mode.add_argument("--dry-run", action="store_true", help="build and verify the plan, send nothing (default)")
+    mode.add_argument("--run", action="store_true", help="send real input (Windows, calibrated profile required)")
+    s.add_argument("--yes", action="store_true", help="skip the YES confirmation before a live run")
     s.add_argument("--start-delay", type=float, default=10.0)
     s.add_argument("--delay-scale", type=float, default=1.0, help="multiply all delays (e.g. 1.5 for a slow PC)")
     s.set_defaults(fn=cmd_inject)

@@ -39,29 +39,37 @@ and 436 plays, which differs from the 41/475 foundation.
 
 ## Applying the playbook to Madden 27 on PC
 
-**Status: the macro is dry-run verified only.** It was built in a Linux container with no game and no Windows, so the
-menu key sequences and list positions could not be checked. The live run therefore refuses to start until you
-calibrate `data/macro_profile.json` (`"calibrated": true`).
+**Status: the plan generator is verified; the in-game behaviour is not.** The macro was built in a Linux container
+with no game, so the menu model below could not be checked against the real Creation Center. Dry runs prove the plan is
+internally consistent (it is replayed against the model and must reproduce `AUDIBLES_CHEAT_SHEET.md` exactly), not that
+Madden behaves that way. Test on a copy of your playbook first.
 
-**Direct file injection is not implemented.** Madden's profile/playbook format is proprietary and undocumented, a bad
-write can corrupt a profile, and modifying game data may conflict with EA's terms and anti-cheat.
-`python cli.py inspect-saves` is a read-only listing of `Documents\Madden NFL 27` if you want that route investigated.
+**Direct file injection is not implemented** (proprietary format, corruption risk, possible conflict with EA's terms and
+anti-cheat). `python cli.py inspect-saves` is a read-only listing of `Documents\Madden NFL 27\settings`,
+`Saved Games\Madden NFL 27` (and OneDrive-redirected Documents) with extension, size and a plaintext/JSON/binary guess.
 
 ### Steps (on the PC, Python 3.11+)
 1. `pip install -r requirements.txt pydirectinput`
-2. Rebuild so the inputs agree: `python cli.py build --base vikings --style flores-macdonald --db data/live.db --out data/live_playbook.json`
-   then `python cli.py export-audibles --playbook data/live_playbook.json --format markdown --out data/AUDIBLES_CHEAT_SHEET.md`.
-   (`inject` refuses to run if the cheat sheet and JSON disagree.)
-3. Calibrate `data/macro_profile.json` (set once for your build/controls):
-   `keys`/`button_keys` (the key bound to each in-game button), `sequences` (key lists for opening the editor, deleting a
-   formation, adding a formation, binding an audible; items are key names or `wait:SECONDS`), and optionally
-   `formation_index` / `play_index` (list positions) for fully automatic navigation.
-   Anything without a position becomes an **assist prompt**: you put the cursor on the item, press ENTER in the console,
-   and the macro does the repetitive part.
-4. Dry run (sends nothing): `python cli.py inject --plan-out data/macro_plan.json` and review the plan.
-5. Live: start Madden in borderless/windowed mode, open the Creation Center playbook editor, then
-   `python cli.py inject --run --start-delay 10` and click into the game. Slow PC? add `--delay-scale 1.5`.
+2. Build the inputs (they must agree; `inject` refuses otherwise):
+   `python cli.py build --base vikings --style flores-macdonald --db data/live.db --out data/live_playbook.json`
+   `python cli.py export-audibles --playbook data/live_playbook.json --format markdown --out data/AUDIBLES_CHEAT_SHEET.md`
+3. `python cli.py calibrate`: press each requested key (confirm, back, 4 directions, tab left/right, delete, assign
+   audible, the 4 audible-slot face-button keys), then pick a killswitch (default `pause`; avoid ESC if the game uses it
+   to back out). This writes `data/macro_profile.json` with `calibrated: true`.
+4. `python cli.py inject --plan-out data/macro_plan.json --dry-run`: builds the zero-prompt plan and checks it against the cheat sheet.
+5. In Madden (borderless windowed): add `Nickel 3-3 Swap Dbl Mug` from the Jaguars / Multiple D pool (the one step not
+   automated), open the defensive formation list with the cursor on the **first** row, then
+   `python cli.py inject --run` (type `YES`, click into the game within 10 s; `--delay-scale 1.5` for a slow PC).
 
-Safety: **ESC aborts** between every step (set `killswitch` in the profile), focus on the game window is asserted
-before every key press, and only keyboard input is sent (no game memory or files are touched). Use it offline;
-automation tools can conflict with EA's terms for online play, and that risk is yours.
+### What the macro does (the model it assumes)
+- Prune: formations are walked top to bottom; moving to a row = N x NAV_DOWN; each delete is `DELETE, wait 200ms, CONFIRM, wait 300ms`
+  and the cursor rests on the row that slid up. Positions come from the huddle.gg list order; if your in-game list
+  differs (you reported 41 fronts vs 28 scraped), write the names top-to-bottom in a text file and pass `--order-file`.
+- Audibles: per kept formation, CONFIRM to enter, then for each slot scroll the alphabetical play list by relative
+  index, press ASSIGN_AUDIBLE, then the slot key (1 top/Y, 2 left/X, 3 right/B, 4 bottom/A), then BACK.
+- Safety: the killswitch aborts between every step, the game must be the foreground window before every key press, a live
+  run needs a calibrated profile and a typed YES, and only keyboard input is sent.
+- Optimizer note: with `--base`, audibles are chosen only from plays that exist in the in-game version of each front, so
+  the macro never has to add plays.
+
+Use it offline; automation can conflict with EA's terms for online play, and that risk is yours.
