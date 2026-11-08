@@ -4,7 +4,8 @@ UI model (from the on-screen control hints; see ASSUMPTIONS for the parts still 
   * Tabs, left to right: AUDIBLES, MY PLAYBOOK, ALL PLAYS, MY GAMEPLAN; Z / C switch tabs.
   * MY PLAYBOOK / AUDIBLES select a formation GROUP with LCTRL (Nickel, Dime, 3-4, 4-3 ...) and a SET within it
     with LSHIFT (2-4, 2-4 Dbl Mug, Over Wide ...).
-  * Prune: on MY PLAYBOOK, select the set and press E to remove all of its plays; an empty set is gone.
+  * Prune: on MY PLAYBOOK, select the set and press E; a "REMOVE PLAY" modal opens with the cursor on NO, so
+    NAV_UP (to YES) and CONFIRM (SPACE) are needed to remove all of its plays; an empty set is gone.
   * Audibles: on AUDIBLES, arrow to the play and press the slot hotkey (top Q, left E, right Z, bottom C).
 The plan is built closed-loop against ``UIModel`` (every key press is applied to the model while planning) and
 ``verify_plan`` replays it on a fresh model and checks the result against the cheat sheet. That proves the plan is
@@ -32,8 +33,9 @@ TABS = ("AUDIBLES", "MY PLAYBOOK", "ALL PLAYS", "MY GAMEPLAN")
 ASSUMPTIONS = [
     "Start on the MY PLAYBOOK tab with the FIRST formation group and its FIRST set selected.",
     "LCTRL / LSHIFT cycle forward and wrap; changing group selects that group's first set.",
-    "E removes every play of the selected set; the emptied set leaves the cycle and selection lands on the "
-    "next set (wrapping) - unless assume.empty_sets_remain is true.",
+    "E opens a REMOVE PLAY confirmation (cursor starts on NO); NAV_UP moves it to YES and CONFIRM (SPACE) removes "
+    "every play of the set. The emptied set leaves the cycle and selection lands on the next set (wrapping) - "
+    "unless assume.empty_sets_remain is true.",
     "In-game group/set order matches huddle.gg (or the profile's formation_order).",
     "Switching tabs resets the selection to the first group/set - unless assume.tab_resets_selection is false.",
     "On AUDIBLES a set's plays are listed alphabetically, the play cursor starts on the first play and "
@@ -131,6 +133,7 @@ class UIModel:
         self.tab, self.g, self.s, self.pcur = TABS.index(tab), 0, 0, 0
         self.removed: list[str] = []
         self.bindings: dict[str, dict[int, str]] = {}
+        self.modal: str | None = None          # None, or the modal cursor: "NO" (default) / "YES"
 
     @property
     def current(self) -> tuple[str, str]:
@@ -145,7 +148,33 @@ class UIModel:
             raise MacroError(f"'{name}' is not in the formation list the macro expects")
         return g, s
 
+    def _remove_current(self) -> None:
+        g, s = self.current
+        self.removed.append(f"{g} {s}")
+        if not self.assume["empty_sets_remain"]:
+            self.sets[g].pop(self.s)
+            if not self.sets[g]:
+                del self.sets[g]
+                self.groups.pop(self.g)
+                self.g, self.s = (self.g % len(self.groups) if self.groups else 0), 0
+            else:
+                self.s %= len(self.sets[g])
+
     def apply(self, action: str) -> None:
+        if self.modal is not None:                 # REMOVE PLAY confirmation is open: only these keys act
+            if action == "up":
+                self.modal = "YES"
+            elif action == "down":
+                self.modal = "NO"
+            elif action == "confirm":
+                if self.modal == "YES":
+                    self._remove_current()
+                self.modal = None                  # NO (the default) just dismisses it
+            elif action == "back":
+                self.modal = None
+            else:
+                raise MacroError(f"'{action}' pressed while the REMOVE PLAY confirmation is open")
+            return
         if action in ("tab_left", "tab_right"):
             self.tab = max(0, min(self.tab + (-1 if action == "tab_left" else 1), len(TABS) - 1))
             self.pcur = 0
@@ -158,16 +187,7 @@ class UIModel:
         elif action == "remove_all":
             if TABS[self.tab] != "MY PLAYBOOK":
                 raise MacroError("remove_all pressed outside MY PLAYBOOK")
-            g, s = self.current
-            self.removed.append(f"{g} {s}")
-            if not self.assume["empty_sets_remain"]:
-                self.sets[g].pop(self.s)
-                if not self.sets[g]:
-                    del self.sets[g]
-                    self.groups.pop(self.g)
-                    self.g, self.s = (self.g % len(self.groups) if self.groups else 0), 0
-                else:
-                    self.s %= len(self.sets[g])
+            self.modal = "NO"                      # opens the confirmation; nothing is removed yet
         elif action in ("up", "down"):
             if TABS[self.tab] == "AUDIBLES":
                 n = len(self.plays.get(" ".join(self.current), []))
@@ -200,6 +220,7 @@ class Step:
     value: str = ""            # key name (key) / label (section)
     seconds: float = 0.0
     action: str = ""           # logical action for key steps
+    exact: bool = False        # True: pause exactly `seconds` (x delay_scale), without the minimum key gap
 
 
 @dataclass
@@ -224,9 +245,15 @@ class _Builder:
     def __init__(self, profile: dict, model: UIModel):
         self.plan, self.keys, self.d, self.model = Plan(), profile["keys"], profile["delays"], model
 
-    def press(self, action: str, wait: float | None = None) -> None:
-        self.plan.steps.append(Step("key", self.keys[action], self.d["key"] if wait is None else wait, action))
+    def press(self, action: str, wait: float | None = None, exact: bool = False) -> None:
+        self.plan.steps.append(Step("key", self.keys[action], self.d["key"] if wait is None else wait, action, exact))
         self.model.apply(action)
+
+    def remove_set(self) -> None:
+        """E -> 150ms -> NAV_UP (NO -> YES) -> 100ms -> CONFIRM -> 300ms (modal dismisses, list updates)."""
+        self.press("remove_all", wait=self.d["remove_open"])
+        self.press("up", wait=self.d["remove_move"], exact=True)
+        self.press("confirm", wait=self.d["remove_wait"])
 
     def wait(self, seconds: float) -> None:
         self.plan.steps.append(Step("wait", seconds=seconds))
@@ -283,7 +310,7 @@ def build_plan(data: dict, profile: dict, prune_limit: int | None = None) -> Pla
     b.section(f"prune {len(targets)} set(s) on MY PLAYBOOK")
     for name in targets:
         b.goto(name)
-        b.press("remove_all", wait=b.d["remove_wait"])
+        b.remove_set()
     if prune_limit is not None:
         return b.plan
 
@@ -433,7 +460,8 @@ def run_plan(plan: Plan, profile: dict, backend: Backend, *, delay_scale: float 
                 raise FocusLost(f"foreground window is not '{title}'")
             backend.press(step.value)
             presses += 1
-            sleep(max(step.seconds, MIN_KEY_GAP) * delay_scale)    # never fire the next key inside the animation
+            # never fire the next key inside the animation (the REMOVE PLAY modal steps use their exact timing)
+            sleep((step.seconds if step.exact else max(step.seconds, MIN_KEY_GAP)) * delay_scale)
         elif step.kind == "wait":
             sleep(step.seconds * delay_scale)
     return presses

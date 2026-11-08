@@ -5,7 +5,7 @@
   "window_title": "Madden NFL 27",
   "killswitch": "pause",
   "keys": {
-    "confirm": "enter",
+    "confirm": "space",
     "back": "backspace",
     "up": "up",
     "down": "down",
@@ -25,6 +25,8 @@
     "key": 0.15,
     "menu": 0.8,
     "section": 1.5,
+    "remove_open": 0.15,
+    "remove_move": 0.1,
     "remove_wait": 0.3
   },
   "assume": {

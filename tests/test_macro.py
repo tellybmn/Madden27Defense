@@ -27,6 +27,12 @@ def model(names, plays=None, tab="MY PLAYBOOK", **assume):
     return mb.UIModel(names, plays or {}, {**cal.DEFAULT_ASSUME, **assume}, tab=tab)
 
 
+def remove(m):
+    """E -> modal (cursor on NO) -> NAV_UP (YES) -> CONFIRM."""
+    for a in ("remove_all", "up", "confirm"):
+        m.apply(a)
+
+
 NAMES = ["3-4 Even", "3-4 Over", "Nickel 2-4", "Nickel 2-4 Dbl Mug", "Dime 2-3"]
 
 
@@ -62,15 +68,15 @@ def test_set_cycle_wraps_within_group():
 
 def test_remove_all_vanishes_and_selection_lands_on_next_set():
     m = model(NAMES)
-    m.apply("remove_all")
+    remove(m)
     assert m.removed == ["3-4 Even"] and m.current == ("3-4", "Over")
-    m.apply("remove_all")                                    # group now empty -> next group, first set
+    remove(m)                                                # group now empty -> next group, first set
     assert m.groups == ["Nickel", "Dime"] and m.current == ("Nickel", "2-4")
 
 
 def test_empty_sets_remain_flag():
     m = model(NAMES, empty_sets_remain=True)
-    m.apply("remove_all")
+    remove(m)
     assert m.names() == NAMES and m.current == ("3-4", "Even")
 
 
@@ -83,6 +89,31 @@ def test_tab_switch_resets_selection_unless_flagged():
     m2.apply("formation_cycle")
     m2.apply("tab_left")
     assert m2.current == ("Nickel", "2-4")
+
+
+def test_remove_modal_defaults_to_no_and_needs_up_then_confirm():
+    m = model(NAMES)
+    m.apply("remove_all")
+    assert m.modal == "NO" and m.removed == []               # E alone removes nothing
+    m.apply("confirm")                                       # confirming on the default NO cancels
+    assert m.modal is None and m.removed == [] and m.names() == NAMES
+    m.apply("remove_all")
+    m.apply("up")
+    assert m.modal == "YES"
+    m.apply("down")
+    assert m.modal == "NO"                                   # down returns to NO
+    m.apply("up")
+    m.apply("confirm")
+    assert m.removed == ["3-4 Even"] and m.modal is None
+
+
+def test_modal_blocks_other_keys_and_back_dismisses():
+    m = model(NAMES)
+    m.apply("remove_all")
+    with pytest.raises(mb.MacroError, match="REMOVE PLAY confirmation is open"):
+        m.apply("set_cycle")
+    m.apply("back")
+    assert m.modal is None and m.removed == []
 
 
 def test_model_rejects_wrong_tab_actions():
@@ -114,12 +145,35 @@ def test_plan_has_zero_prompts_and_matches_cheat_sheet(data, profile):
 def test_pruning_uses_e_and_the_cycle_keys_not_delete(data, profile):
     plan = mb.build_plan(data, profile)
     acts = [s.action for s in plan.steps if s.kind == "key"]
-    assert acts.count("remove_all") == 23 and "delete" not in acts and "confirm" not in acts
+    assert acts.count("remove_all") == 23 and "delete" not in acts
+    assert acts.count("confirm") == 23                       # one SPACE per removal, none anywhere else
     assert {"formation_cycle", "set_cycle"} <= set(acts)
     keys = {s.action: s.value for s in plan.steps if s.kind == "key"}
     assert (keys["remove_all"], keys["formation_cycle"], keys["set_cycle"]) == ("e", "ctrlleft", "shiftleft")
+    assert keys["confirm"] == "space"
     assert acts.index("tab_left") > max(i for i, a in enumerate(acts) if a == "remove_all")    # prune first
     assert acts.count("tab_left") == 1 and "tab_right" not in acts
+
+
+def test_removal_sequence_and_timing(data, profile):
+    plan = mb.build_plan(data, profile, prune_limit=1)
+    ks = [s for s in plan.steps if s.kind == "key"]
+    assert [(s.action, s.value, s.seconds, s.exact) for s in ks] == [
+        ("remove_all", "e", 0.15, False), ("up", "up", 0.10, True), ("confirm", "space", 0.30, False)]
+
+
+def test_each_removal_is_e_up_confirm_in_order(data, profile):
+    acts = [s.action for s in mb.build_plan(data, profile).steps if s.kind == "key"]
+    idx = [i for i, a in enumerate(acts) if a == "remove_all"]
+    assert len(idx) == 23 and all(acts[i + 1:i + 3] == ["up", "confirm"] for i in idx)
+
+
+def test_plan_without_nav_up_is_rejected(data, profile):
+    plan = mb.build_plan(data, profile)
+    i = next(i for i, s in enumerate(plan.steps) if s.kind == "key" and s.action == "up")
+    del plan.steps[i]                                        # the modal would stay on NO and cancel
+    with pytest.raises(mb.MacroError):
+        mb.verify_plan(plan, profile, data, SHEET)
 
 
 def test_audibles_use_slot_hotkeys_directly(data, profile):
@@ -167,7 +221,7 @@ def test_simulation_detects_a_broken_plan(data, profile):
 
 def test_prune_limit_test_plan(data, profile):
     plan = mb.build_plan(data, profile, prune_limit=2)
-    assert [s.action for s in plan.steps if s.kind == "key"] == ["remove_all", "remove_all"]
+    assert [s.action for s in plan.steps if s.kind == "key"] == ["remove_all", "up", "confirm"] * 2
     assert "TEST PLAN" in plan.preconditions[-1]
     assert "test plan: 2 set(s) emptied" in mb.verify_plan(plan, profile, data, SHEET, prune_limit=2)
 
@@ -296,7 +350,7 @@ def test_cli_inject_live_path_with_fake_backend(monkeypatch):
         return b
     monkeypatch.setattr(mb, "DirectInputBackend", fake_backend)
     assert main(["inject", "--run", "--yes", "--start-delay", "0", "--delay-scale", "0"]) == 0
-    assert len(made) == 1 and len(made[0].log) == 159 and made[0].log[0] == ("key", "e")
+    assert len(made) == 1 and len(made[0].log) == 205 and made[0].log[:3] == [("key", "e"), ("key", "up"), ("key", "space")]
 
 
 # ---------------------------------------------------------------- calibration
@@ -310,7 +364,7 @@ def reader(keys):
     return lambda label: next(it)
 
 
-FULL = ["enter", "backspace", "up", "down", "left", "right", "z", "c", "e", "q", "e", "z", "c"]
+FULL = ["space", "backspace", "up", "down", "left", "right", "z", "c", "e", "q", "e", "z", "c"]
 TYPED = ["n", "ctrlleft", "shiftleft"]      # 'n' = no defaults, then the two typed-only modifier keys
 
 
@@ -332,7 +386,7 @@ def test_calibrate_full_capture_path(tmp_path):
 
 
 def test_calibrate_rejects_same_screen_conflicts_and_unknown_keys(tmp_path):
-    keys = ["enter", "enter", "bogus-key", "backspace"] + FULL[2:12] + ["q", "c"]   # slot 4 'q' clashes with slot 1
+    keys = ["space", "space", "bogus-key", "backspace"] + FULL[2:12] + ["q", "c"]   # slot 4 'q' clashes with slot 1
     outs = []
     prof = cal.run_calibration(tmp_path / "p.json", read_key=reader(keys), ask=asker(TYPED + [""]), out=outs.append)
     text = "\n".join(outs)
@@ -453,13 +507,21 @@ def test_hold_is_configurable_and_key_is_released_on_error():
 def test_every_key_is_followed_by_at_least_150ms_times_scale(data, profile):
     plan = mb.build_plan(data, profile)
     for s in plan.steps:                                          # even a zero-delay step gets the minimum gap
-        if s.kind == "key":
+        if s.kind == "key" and not s.exact:
             s.seconds = 0.0
     for scale in (1.0, 1.5):
         sleeps = []
         mb.run_plan(plan, profile, mb.DryRunBackend(), sleep=sleeps.append, delay_scale=scale)
-        gaps = [x for x in sleeps]
-        assert len(gaps) >= plan.counts()["key"] and min(gaps) >= 0.15 * scale - 1e-9
+        assert len(sleeps) >= plan.counts()["key"]
+        exact = round(0.10 * scale, 9)
+        assert all(x >= 0.15 * scale - 1e-9 or round(x, 9) == exact for x in sleeps)   # only the 100ms modal step is shorter
+        assert sum(1 for x in sleeps if round(x, 9) == exact) == 23
+
+
+def test_modal_nav_up_pause_is_exactly_100ms_scaled(data, profile):
+    plan, sleeps = mb.build_plan(data, profile, prune_limit=1), []
+    mb.run_plan(plan, profile, mb.DryRunBackend(), sleep=sleeps.append, delay_scale=1.5)
+    assert [round(x, 3) for x in sleeps] == [0.225, 0.15, 0.45]       # 150ms, 100ms, 300ms all x1.5
 
 
 def test_live_run_uses_hold_through_the_real_backend_class(data, profile):
@@ -469,7 +531,8 @@ def test_live_run_uses_hold_through_the_real_backend_class(data, profile):
     b.abort_requested = lambda: False
     plan = mb.build_plan(data, profile, prune_limit=2)
     mb.run_plan(plan, profile, b, sleep=lambda s: None, live=True)
-    assert fake.calls == [("down", "e"), ("up", "e")] * 2 and sleeps == [0.08, 0.08]
+    assert fake.calls == [c for k in ("e", "up", "space") for c in (("down", k), ("up", k))] * 2
+    assert sleeps == [0.08] * 6
 
 
 def test_is_admin_is_tri_state():

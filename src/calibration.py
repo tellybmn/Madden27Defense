@@ -16,7 +16,7 @@ from typing import Callable
 
 # (profile key, label shown to the user, hint)
 PROMPTS: list[tuple[str, str, str]] = [
-    ("confirm", "SELECT / CONFIRM", "ENTER or Space"),
+    ("confirm", "SELECT / CONFIRM", "SPACE (the bottom bar shows [SPACE] SELECT)"),
     ("back", "BACK / CANCEL", "Backspace (ESC pops warning prompts)"),
     ("up", "NAV_UP", "Up arrow or W"),
     ("down", "NAV_DOWN", "Down arrow or S"),
@@ -34,7 +34,7 @@ PROMPTS: list[tuple[str, str, str]] = [
 ]
 
 VERIFIED_DEFAULTS: dict[str, str] = {
-    "confirm": "enter", "back": "backspace",
+    "confirm": "space", "back": "backspace",
     "up": "up", "down": "down", "left": "left", "right": "right",
     "tab_left": "z", "tab_right": "c",
     "formation_cycle": "ctrlleft", "set_cycle": "shiftleft", "remove_all": "e",
@@ -69,7 +69,8 @@ _MSVCRT_E0 = {"H": "up", "P": "down", "K": "left", "M": "right", "S": "delete", 
               "G": "home", "O": "end", "I": "pageup", "Q": "pagedown"}
 _MSVCRT_00 = {chr(59 + i): f"f{i + 1}" for i in range(10)} | {chr(133): "f11", chr(134): "f12"}
 
-DEFAULT_DELAYS = {"key": 0.15, "menu": 0.8, "section": 1.5, "remove_wait": 0.3}
+DEFAULT_DELAYS = {"key": 0.15, "menu": 0.8, "section": 1.5, "remove_open": 0.15, "remove_move": 0.10,
+                  "remove_wait": 0.3}
 DEFAULT_ASSUME = {"empty_sets_remain": False, "tab_resets_selection": True}
 
 

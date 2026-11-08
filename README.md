@@ -53,7 +53,7 @@ terms); `python cli.py inspect-saves` is a read-only listing of the Documents/Sa
 | Cycle set within the group (2-4, 2-4 Dbl Mug, Over Wide ...) | `LSHIFT` |
 | Remove / activate all plays of the selected set (MY PLAYBOOK) | `E` |
 | Audible slots on AUDIBLES: top / left / right / bottom | `Q` / `E` / `Z` / `C` |
-| Confirm / back | `ENTER` / `BACKSPACE` (avoid `ESC`: it triggers warning prompts) |
+| Confirm / back | `SPACE` (bottom bar: `[SPACE] SELECT`) / `BACKSPACE` (avoid `ESC`: it triggers warning prompts) |
 
 Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
 
@@ -69,8 +69,8 @@ Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
 5. In Madden: add `Nickel 3-3 Swap Dbl Mug` from the Jaguars / Multiple D pool (not automated), open
    **MY PLAYBOOK** with the first formation group and its first set selected.
 6. **Test the model first:** `python cli.py inject --run --prune-limit 2`. It removes only the first 2 sets. Check that
-   the right two sets were emptied and the selection moved the way the plan expects. `E` is a toggle, so a wrong
-   assumption would re-activate plays rather than remove them.
+   the right two sets were emptied and the selection moved the way the plan expects (the first two removals). If the
+   modal behaves differently, stop and report what it shows.
 7. Full run: `python cli.py inject --run --delay-scale 1.5` (type `YES`, switch to Madden within 10 s).
 
 ### If keys are not registering
@@ -83,10 +83,12 @@ Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
 - Keep the game window focused (the macro aborts if it loses focus), and re-check the canary with `--prune-limit 2`.
 
 ### What the macro does
-- **Prune (MY PLAYBOOK):** for each of the 23 sets: `LCTRL` to its group, `LSHIFT` to the set, `E`. It plans against a
-  model of the selection state, so it presses the minimum number of cycles.
+- **Prune (MY PLAYBOOK):** for each of the 23 sets: `LCTRL` to its group, `LSHIFT` to the set, then the removal sequence
+  `E`, 150 ms, `UP`, 100 ms, `SPACE`, 300 ms. `E` opens a "REMOVE PLAY" confirmation whose cursor starts on NO, so `UP`
+  moves it to YES and `SPACE` confirms. It plans against a model of the selection state (including that modal), so it
+  presses the minimum number of cycles; a plan missing `UP` fails verification because the modal would cancel.
 - **Audibles (AUDIBLES):** `Z` once to leave MY PLAYBOOK, then for each kept set: cycle to it, arrow to each play and
-  press its slot key. About 160 key presses in total.
+  press its slot key. About 205 key presses in total.
 - **Safety:** the killswitch aborts between every key, the game must be the foreground window before each key press,
   a live run needs a calibrated profile with no unverified keys and a typed `YES`; only keyboard input is sent.
 

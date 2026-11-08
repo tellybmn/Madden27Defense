@@ -7,7 +7,7 @@
  "assumptions": [
   "Start on the MY PLAYBOOK tab with the FIRST formation group and its FIRST set selected.",
   "LCTRL / LSHIFT cycle forward and wrap; changing group selects that group's first set.",
-  "E removes every play of the selected set; the emptied set leaves the cycle and selection lands on the next set (wrapping) - unless assume.empty_sets_remain is true.",
+  "E opens a REMOVE PLAY confirmation (cursor starts on NO); NAV_UP moves it to YES and CONFIRM (SPACE) removes every play of the set. The emptied set leaves the cycle and selection lands on the next set (wrapping) - unless assume.empty_sets_remain is true.",
   "In-game group/set order matches huddle.gg (or the profile's formation_order).",
   "Switching tabs resets the selection to the first group/set - unless assume.tab_resets_selection is false.",
   "On AUDIBLES a set's plays are listed alphabetically, the play cursor starts on the first play and stays on a play after its slot key is pressed.",
@@ -18,1003 +18,1492 @@
    "kind": "section",
    "value": "prune 23 set(s) on MY PLAYBOOK",
    "seconds": 0.0,
-   "action": ""
+   "action": "",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "ctrlleft",
    "seconds": 0.15,
-   "action": "formation_cycle"
+   "action": "formation_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "shiftleft",
    "seconds": 0.15,
-   "action": "set_cycle"
+   "action": "set_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "shiftleft",
    "seconds": 0.15,
-   "action": "set_cycle"
+   "action": "set_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "ctrlleft",
    "seconds": 0.15,
-   "action": "formation_cycle"
+   "action": "formation_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "shiftleft",
    "seconds": 0.15,
-   "action": "set_cycle"
+   "action": "set_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "ctrlleft",
    "seconds": 0.15,
-   "action": "formation_cycle"
+   "action": "formation_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
+   "seconds": 0.15,
+   "action": "remove_all",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "up",
+   "seconds": 0.1,
+   "action": "up",
+   "exact": true
+  },
+  {
+   "kind": "key",
+   "value": "space",
    "seconds": 0.3,
-   "action": "remove_all"
+   "action": "confirm",
+   "exact": false
   },
   {
    "kind": "section",
    "value": "bind audibles on AUDIBLES",
    "seconds": 0.0,
-   "action": ""
+   "action": "",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "z",
    "seconds": 0.8,
-   "action": "tab_left"
+   "action": "tab_left",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "z",
    "seconds": 0.8,
-   "action": "audible_slot_3"
+   "action": "audible_slot_3",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "c",
    "seconds": 0.8,
-   "action": "audible_slot_4"
+   "action": "audible_slot_4",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
    "seconds": 0.8,
-   "action": "audible_slot_2"
+   "action": "audible_slot_2",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "q",
    "seconds": 0.8,
-   "action": "audible_slot_1"
+   "action": "audible_slot_1",
+   "exact": false
   },
   {
    "kind": "wait",
    "value": "",
    "seconds": 0.5,
-   "action": ""
+   "action": "",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "ctrlleft",
    "seconds": 0.15,
-   "action": "formation_cycle"
+   "action": "formation_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "z",
    "seconds": 0.8,
-   "action": "audible_slot_3"
+   "action": "audible_slot_3",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "c",
    "seconds": 0.8,
-   "action": "audible_slot_4"
+   "action": "audible_slot_4",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
    "seconds": 0.8,
-   "action": "audible_slot_2"
+   "action": "audible_slot_2",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "q",
    "seconds": 0.8,
-   "action": "audible_slot_1"
+   "action": "audible_slot_1",
+   "exact": false
   },
   {
    "kind": "wait",
    "value": "",
    "seconds": 0.5,
-   "action": ""
+   "action": "",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "shiftleft",
    "seconds": 0.15,
-   "action": "set_cycle"
+   "action": "set_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "c",
    "seconds": 0.8,
-   "action": "audible_slot_4"
+   "action": "audible_slot_4",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
    "seconds": 0.8,
-   "action": "audible_slot_2"
+   "action": "audible_slot_2",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "q",
    "seconds": 0.8,
-   "action": "audible_slot_1"
+   "action": "audible_slot_1",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "z",
    "seconds": 0.8,
-   "action": "audible_slot_3"
+   "action": "audible_slot_3",
+   "exact": false
   },
   {
    "kind": "wait",
    "value": "",
    "seconds": 0.5,
-   "action": ""
+   "action": "",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "shiftleft",
    "seconds": 0.15,
-   "action": "set_cycle"
+   "action": "set_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "q",
    "seconds": 0.8,
-   "action": "audible_slot_1"
+   "action": "audible_slot_1",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
    "seconds": 0.8,
-   "action": "audible_slot_2"
+   "action": "audible_slot_2",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "c",
    "seconds": 0.8,
-   "action": "audible_slot_4"
+   "action": "audible_slot_4",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "z",
    "seconds": 0.8,
-   "action": "audible_slot_3"
+   "action": "audible_slot_3",
+   "exact": false
   },
   {
    "kind": "wait",
    "value": "",
    "seconds": 0.5,
-   "action": ""
+   "action": "",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "ctrlleft",
    "seconds": 0.15,
-   "action": "formation_cycle"
+   "action": "formation_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "z",
    "seconds": 0.8,
-   "action": "audible_slot_3"
+   "action": "audible_slot_3",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "c",
    "seconds": 0.8,
-   "action": "audible_slot_4"
+   "action": "audible_slot_4",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "q",
    "seconds": 0.8,
-   "action": "audible_slot_1"
+   "action": "audible_slot_1",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
    "seconds": 0.8,
-   "action": "audible_slot_2"
+   "action": "audible_slot_2",
+   "exact": false
   },
   {
    "kind": "wait",
    "value": "",
    "seconds": 0.5,
-   "action": ""
+   "action": "",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "shiftleft",
    "seconds": 0.15,
-   "action": "set_cycle"
+   "action": "set_cycle",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "q",
    "seconds": 0.8,
-   "action": "audible_slot_1"
+   "action": "audible_slot_1",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "z",
    "seconds": 0.8,
-   "action": "audible_slot_3"
+   "action": "audible_slot_3",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "c",
    "seconds": 0.8,
-   "action": "audible_slot_4"
+   "action": "audible_slot_4",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "down",
    "seconds": 0.15,
-   "action": "down"
+   "action": "down",
+   "exact": false
   },
   {
    "kind": "key",
    "value": "e",
    "seconds": 0.8,
-   "action": "audible_slot_2"
+   "action": "audible_slot_2",
+   "exact": false
   },
   {
    "kind": "wait",
    "value": "",
    "seconds": 0.5,
-   "action": ""
+   "action": "",
+   "exact": false
   }
  ]
 }
