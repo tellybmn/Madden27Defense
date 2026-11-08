@@ -290,7 +290,7 @@ def test_cli_inject_live_path_with_fake_backend(monkeypatch):
     """Exercise --run end to end WITHOUT sending real input (the real backend would type into any window)."""
     made = []
 
-    def fake_backend(killswitch):
+    def fake_backend(killswitch, hold=0.08):
         b = mb.DryRunBackend()
         made.append(b)
         return b
@@ -409,3 +409,95 @@ def test_inspector_lists_files_read_only(tmp_path):
     assert by["SAVE1.DAT"]["kind"] == "binary" and by["SAVE1.DAT"]["ext"] == ".dat" and by["SAVE1.DAT"]["bytes"] == 1024
     assert before == {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
     assert len(rows) == 3                            # no duplicates across overlapping dirs
+
+
+# ---------------------------------------------------------------- hold / gap / admin
+class FakeInput:
+    """Stands in for pydirectinput: records the exact call order, including sleeps."""
+    def __init__(self):
+        self.calls = []
+
+    def keyDown(self, key):
+        self.calls.append(("down", key))
+
+    def keyUp(self, key):
+        self.calls.append(("up", key))
+
+    def press(self, key):                       # must never be used: it is instantaneous
+        self.calls.append(("press", key))
+
+
+def test_send_key_holds_between_down_and_up():
+    fake, sleeps = FakeInput(), []
+    b = mb.DirectInputBackend("pause", input_module=fake,
+                              sleep=lambda s: (fake.calls.append(("sleep", s)), sleeps.append(s)))
+    b.press("e")
+    assert fake.calls == [("down", "e"), ("sleep", 0.08), ("up", "e")]
+    assert not any(c[0] == "press" for c in fake.calls)
+
+
+def test_hold_is_configurable_and_key_is_released_on_error():
+    fake = FakeInput()
+
+    def boom(_):
+        raise RuntimeError("interrupted")
+    b = mb.DirectInputBackend("pause", hold=0.12, input_module=fake, sleep=boom)
+    with pytest.raises(RuntimeError):
+        b.send_key("q")
+    assert fake.calls == [("down", "q"), ("up", "q")]            # never left stuck down
+    fake2, slept = FakeInput(), []
+    mb.DirectInputBackend("pause", hold=0.12, input_module=fake2, sleep=slept.append).send_key("z")
+    assert slept == [0.12]
+
+
+def test_every_key_is_followed_by_at_least_150ms_times_scale(data, profile):
+    plan = mb.build_plan(data, profile)
+    for s in plan.steps:                                          # even a zero-delay step gets the minimum gap
+        if s.kind == "key":
+            s.seconds = 0.0
+    for scale in (1.0, 1.5):
+        sleeps = []
+        mb.run_plan(plan, profile, mb.DryRunBackend(), sleep=sleeps.append, delay_scale=scale)
+        gaps = [x for x in sleeps]
+        assert len(gaps) >= plan.counts()["key"] and min(gaps) >= 0.15 * scale - 1e-9
+
+
+def test_live_run_uses_hold_through_the_real_backend_class(data, profile):
+    fake, sleeps = FakeInput(), []
+    b = mb.DirectInputBackend("pause", input_module=fake, sleep=sleeps.append)
+    b.foreground_title = lambda: "Madden NFL 27"
+    b.abort_requested = lambda: False
+    plan = mb.build_plan(data, profile, prune_limit=2)
+    mb.run_plan(plan, profile, b, sleep=lambda s: None, live=True)
+    assert fake.calls == [("down", "e"), ("up", "e")] * 2 and sleeps == [0.08, 0.08]
+
+
+def test_is_admin_is_tri_state():
+    assert mb.is_admin() in (True, False, None)
+
+
+@pytest.mark.parametrize("admin,expected", [(False, "not elevated"), (None, "Administrator PowerShell")])
+def test_cli_warns_when_not_elevated(monkeypatch, capsys, admin, expected):
+    monkeypatch.setattr(mb, "is_admin", lambda: admin)
+    monkeypatch.setattr(mb, "DirectInputBackend", lambda ks, hold=0.08: mb.DryRunBackend())
+    assert main(["inject", "--run", "--yes", "--start-delay", "0", "--delay-scale", "0", "--prune-limit", "1"]) == 0
+    assert expected in " ".join(capsys.readouterr().out.split())
+
+
+def test_cli_does_not_warn_when_elevated(monkeypatch, capsys):
+    monkeypatch.setattr(mb, "is_admin", lambda: True)
+    monkeypatch.setattr(mb, "DirectInputBackend", lambda ks, hold=0.08: mb.DryRunBackend())
+    assert main(["inject", "--run", "--yes", "--start-delay", "0", "--delay-scale", "0", "--prune-limit", "1"]) == 0
+    out = " ".join(capsys.readouterr().out.split())
+    assert "not elevated" not in out and "Administrator" not in out
+
+
+def test_cli_passes_hold_to_backend(monkeypatch):
+    seen = {}
+
+    def fake(ks, hold=0.08):
+        seen["hold"] = hold
+        return mb.DryRunBackend()
+    monkeypatch.setattr(mb, "DirectInputBackend", fake)
+    main(["inject", "--run", "--yes", "--start-delay", "0", "--delay-scale", "0", "--prune-limit", "1", "--hold", "0.12"])
+    assert seen["hold"] == 0.12

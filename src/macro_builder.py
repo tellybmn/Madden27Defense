@@ -363,23 +363,49 @@ class DryRunBackend(Backend):
         return self.abort_after is not None and len(self.log) >= self.abort_after
 
 
+HOLD_SECONDS = 0.08       # DirectX games sample input per frame: a tap shorter than a frame is dropped
+MIN_KEY_GAP = 0.15        # minimum pause after every key press (scaled by --delay-scale)
+
+
+def is_admin() -> bool | None:
+    """True/False on Windows (process elevation); None elsewhere."""
+    try:
+        import ctypes
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except (AttributeError, OSError, ImportError):
+        return None
+
+
 class DirectInputBackend(Backend):
-    """Windows-only. Not exercised by the test-suite (needs Windows + pydirectinput + the game)."""
+    """Windows-only. Sends real key presses: keyDown, hold ~80 ms, keyUp (an instant press() is dropped by
+    the game's per-frame input sampling). The Windows polling methods are not exercised by the test-suite."""
 
-    def __init__(self, killswitch: str = "pause"):
-        try:
-            import ctypes
-            import pydirectinput
-        except ImportError as e:   # pragma: no cover
-            raise MacroError("pydirectinput is required for live runs: pip install pydirectinput (Windows)") from e
-        if not hasattr(ctypes, "windll"):   # pragma: no cover
-            raise MacroError("live runs are Windows-only")
-        self._ct, self._pdi = ctypes, pydirectinput
+    def __init__(self, killswitch: str = "pause", hold: float = HOLD_SECONDS, *, input_module=None,
+                 sleep: Callable[[float], None] = time.sleep):
+        self._ct = None
+        if input_module is None:   # pragma: no cover
+            try:
+                import ctypes
+                import pydirectinput as input_module
+            except ImportError as e:
+                raise MacroError("pydirectinput is required for live runs: pip install pydirectinput (Windows)") from e
+            if not hasattr(ctypes, "windll"):
+                raise MacroError("live runs are Windows-only")
+            self._ct = ctypes
+            input_module.PAUSE = 0.0
+        self._pdi, self.hold, self._sleep = input_module, hold, sleep
         self._vk = KILLSWITCH_VK[killswitch]
-        pydirectinput.PAUSE = 0.0
 
-    def press(self, key):   # pragma: no cover
-        self._pdi.press(key)
+    def send_key(self, key: str) -> None:
+        """keyDown, hold, keyUp. keyUp always runs so a key is never left stuck down."""
+        self._pdi.keyDown(key)
+        try:
+            self._sleep(self.hold)
+        finally:
+            self._pdi.keyUp(key)
+
+    def press(self, key):
+        self.send_key(key)
 
     def foreground_title(self):   # pragma: no cover
         u = self._ct.windll.user32
@@ -407,7 +433,7 @@ def run_plan(plan: Plan, profile: dict, backend: Backend, *, delay_scale: float 
                 raise FocusLost(f"foreground window is not '{title}'")
             backend.press(step.value)
             presses += 1
-            sleep(step.seconds * delay_scale)
+            sleep(max(step.seconds, MIN_KEY_GAP) * delay_scale)    # never fire the next key inside the animation
         elif step.kind == "wait":
             sleep(step.seconds * delay_scale)
     return presses

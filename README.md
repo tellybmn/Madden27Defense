@@ -73,6 +73,15 @@ Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
    assumption would re-activate plays rather than remove them.
 7. Full run: `python cli.py inject --run --delay-scale 1.5` (type `YES`, switch to Madden within 10 s).
 
+### If keys are not registering
+- **Run PowerShell as Administrator.** Madden and its anti-cheat run elevated; a non-elevated script cannot send input to an
+  elevated window and its keys are silently dropped. `inject --run` warns when the shell is not elevated.
+- **Key hold:** each key is sent as `keyDown`, a hold of 0.08 s, then `keyUp`, because the game samples input once per frame
+  and drops an instantaneous tap. Raise it with `--hold 0.12` if inputs are still missed.
+- **Gap between keys:** every key is followed by a pause of at least 0.15 s times `--delay-scale`; use `--delay-scale 2` for
+  slow menu animations.
+- Keep the game window focused (the macro aborts if it loses focus), and re-check the canary with `--prune-limit 2`.
+
 ### What the macro does
 - **Prune (MY PLAYBOOK):** for each of the 23 sets: `LCTRL` to its group, `LSHIFT` to the set, `E`. It plans against a
   model of the selection state, so it presses the minimum number of cycles.

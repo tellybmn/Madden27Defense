@@ -179,8 +179,14 @@ def cmd_inject(args) -> int:
         console.print("Cancelled.")
         return 1
     import time
+    if mb.is_admin() is False:
+        console.print("[bold red]WARNING: this shell is not elevated.[/] Madden/EA Anti-Cheat runs elevated, and "
+                      "a non-elevated script cannot send input to it (keys are silently dropped). Close this window, "
+                      "open PowerShell with 'Run as administrator', and run the command again.")
+    elif mb.is_admin() is None:
+        console.print("[yellow]Note: run live injection from an Administrator PowerShell on Windows.[/]")
     try:
-        backend = mb.DirectInputBackend(profile["killswitch"])
+        backend = mb.DirectInputBackend(profile["killswitch"], hold=args.hold)
         console.print(f"Starting in {args.start_delay}s: switch to Madden (MY PLAYBOOK tab) now. Press {profile['killswitch'].upper()} to abort.")
         time.sleep(args.start_delay)
         sent = mb.run_plan(plan, profile, backend, delay_scale=args.delay_scale, live=True)
@@ -317,6 +323,7 @@ def main(argv=None) -> int:
     s.add_argument("--prune-limit", type=int, help="test plan: only remove the first N sets, bind no audibles")
     s.add_argument("--yes", action="store_true", help="skip the YES confirmation before a live run")
     s.add_argument("--start-delay", type=float, default=10.0)
+    s.add_argument("--hold", type=float, default=0.08, help="seconds each key is held down (default 0.08)")
     s.add_argument("--delay-scale", type=float, default=1.0, help="multiply all delays (e.g. 1.5 for a slow PC)")
     s.set_defaults(fn=cmd_inject)
 
