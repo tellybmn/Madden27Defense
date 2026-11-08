@@ -35,6 +35,37 @@ def remove(m):
 
 NAMES = ["3-4 Even", "3-4 Over", "Nickel 2-4", "Nickel 2-4 Dbl Mug", "Dime 2-3"]
 
+# The Nickel sets shown in the real "SELECT SET" dropdown screenshot (after most fronts were pruned).
+DROPDOWN_NAMES = ["3-4 Under", "Nickel 2-4 Single Mug", "Nickel 2-4 Swap Dbl Mug", "Nickel 2-4 Wide",
+                  "Nickel 3-3 Odd", "Nickel 3-3 Swap Dbl Mug", "Dime 2-3"]
+
+
+def pick_set(m, index):
+    """LSHIFT opens SELECT SET, arrows move the dropdown cursor, SPACE selects."""
+    m.apply("set_cycle")
+    while m.dropdown != index:
+        m.apply("down" if index > m.dropdown else "up")
+    m.apply("confirm")
+
+
+def removal_confirms(plan):
+    """The SPACE presses that confirm a REMOVE PLAY modal (E -> UP -> SPACE), not dropdown selections."""
+    ks = [s for s in plan.steps if s.kind == "key"]
+    return [s for i, s in enumerate(ks) if s.action == "confirm" and i >= 2
+            and ks[i - 1].action == "up" and ks[i - 2].action == "remove_all"]
+
+
+def dropdown_confirms(plan):
+    ks = [s for s in plan.steps if s.kind == "key"]
+    out, open_ = [], False
+    for s in ks:
+        if s.action == "set_cycle":
+            open_ = True
+        elif s.action == "confirm" and open_:
+            out.append(s)
+            open_ = False
+    return out
+
 
 # ------------------------------------------------------------ name split
 @pytest.mark.parametrize("name,expected", [
@@ -50,20 +81,62 @@ def test_split_formation_name(name, expected):
 # ------------------------------------------------------------ UI model
 def test_formation_cycle_wraps_and_resets_set():
     m = model(NAMES)
-    m.apply("set_cycle")
+    pick_set(m, 1)
     assert m.current == ("3-4", "Over")
     for _ in range(3):
         m.apply("formation_cycle")
     assert m.current == ("3-4", "Even")                      # 3 groups wrap to the start; set reset to first
 
 
-def test_set_cycle_wraps_within_group():
+def test_lshift_opens_a_dropdown_instead_of_cycling():
+    m = model(NAMES)
+    m.apply("formation_cycle")                               # Nickel: sets "2-4", "2-4 Dbl Mug"
+    m.apply("set_cycle")
+    assert m.dropdown == 0 and m.current == ("Nickel", "2-4")   # nothing selected yet
+    m.apply("down")
+    assert m.dropdown == 1 and m.current == ("Nickel", "2-4")   # moving the cursor does not select either
+    m.apply("confirm")
+    assert m.dropdown is None and m.current == ("Nickel", "2-4 Dbl Mug")
+
+
+def test_dropdown_cursor_clamps_and_back_cancels():
     m = model(NAMES)
     m.apply("formation_cycle")
     m.apply("set_cycle")
-    assert m.current == ("Nickel", "2-4 Dbl Mug")
-    m.apply("set_cycle")                                     # wraps to the group's first set
-    assert m.current == ("Nickel", "2-4")
+    for _ in range(5):
+        m.apply("down")
+    assert m.dropdown == 1                                   # no wrap past the last row
+    m.apply("up")
+    m.apply("up")
+    assert m.dropdown == 0
+    m.apply("back")
+    assert m.dropdown is None and m.current == ("Nickel", "2-4")
+
+
+@pytest.mark.parametrize("leak", ["remove_all", "set_cycle", "formation_cycle", "tab_left", "audible_slot_1", "left"])
+def test_any_other_key_while_dropdown_is_open_is_an_error(leak):
+    m = model(NAMES)
+    m.apply("set_cycle")
+    with pytest.raises(mb.MacroError, match="SELECT SET dropdown is open"):
+        m.apply(leak)
+
+
+def test_dropdown_start_position_flag():
+    m = model(NAMES, dropdown_starts_on_current=False)
+    m.apply("formation_cycle")
+    pick_set(m, 1)                                           # cursor opened on row 0 even though row 0 is current
+    m.apply("set_cycle")
+    assert m.dropdown == 0
+    m2 = model(NAMES)
+    m2.apply("formation_cycle")
+    pick_set(m2, 1)
+    m2.apply("set_cycle")
+    assert m2.dropdown == 1                                  # default: opens on the current set
+
+
+def test_set_menu_needs_playbook_or_audibles_tab():
+    with pytest.raises(mb.MacroError, match="outside MY PLAYBOOK / AUDIBLES"):
+        model(NAMES, tab="ALL PLAYS").apply("set_cycle")
 
 
 def test_remove_all_vanishes_and_selection_lands_on_next_set():
@@ -146,7 +219,8 @@ def test_pruning_uses_e_and_the_cycle_keys_not_delete(data, profile):
     plan = mb.build_plan(data, profile)
     acts = [s.action for s in plan.steps if s.kind == "key"]
     assert acts.count("remove_all") == 23 and "delete" not in acts
-    assert acts.count("confirm") == 23                       # one SPACE per removal, none anywhere else
+    assert len(removal_confirms(plan)) == 23                 # one SPACE per removal modal
+    assert acts.count("confirm") == 23 + acts.count("set_cycle")   # ...plus one per SELECT SET dropdown
     assert {"formation_cycle", "set_cycle"} <= set(acts)
     keys = {s.action: s.value for s in plan.steps if s.kind == "key"}
     assert (keys["remove_all"], keys["formation_cycle"], keys["set_cycle"]) == ("e", "ctrlleft", "shiftleft")
@@ -164,8 +238,8 @@ def test_removal_sequence_and_timing(data, profile):
 
 def test_post_confirm_settle_is_600ms_scaled(data, profile):
     plan = mb.build_plan(data, profile)
-    confirms = [s for s in plan.steps if s.kind == "key" and s.action == "confirm"]
-    assert len(confirms) == 23 and {s.seconds for s in confirms} == {0.6}
+    rc = removal_confirms(plan)
+    assert len(rc) == 23 and {s.seconds for s in rc} == {0.6}
     sleeps = []
     mb.run_plan(mb.build_plan(data, profile, prune_limit=1), profile, mb.DryRunBackend(), sleep=sleeps.append,
                 delay_scale=1.5)
@@ -176,16 +250,16 @@ def test_stale_saved_profile_cannot_bring_back_the_short_settles(data, profile):
     profile["delays"]["remove_wait"] = 0.3                    # what an older `calibrate` run wrote to disk
     profile["delays"]["cycle_settle"] = 0.05
     plan = mb.build_plan(data, profile)
-    assert {s.seconds for s in plan.steps if s.kind == "key" and s.action == "confirm"} == {0.6}
+    assert {s.seconds for s in removal_confirms(plan)} == {0.6}
     assert {s.seconds for s in plan.steps if s.kind == "key" and s.action in ("formation_cycle", "set_cycle")} == {0.2}
     profile["delays"]["remove_wait"] = 1.0                    # a slower value is honoured
-    assert {s.seconds for s in mb.build_plan(data, profile).steps if s.action == "confirm"} == {1.0}
+    assert {s.seconds for s in removal_confirms(mb.build_plan(data, profile))} == {1.0}
 
 
 def test_every_cycle_key_is_followed_by_200ms(data, profile):
     plan = mb.build_plan(data, profile)
     cycles = [s for s in plan.steps if s.kind == "key" and s.action in ("formation_cycle", "set_cycle")]
-    assert len(cycles) >= 11 and all(s.seconds == 0.2 for s in cycles)
+    assert len(cycles) >= 10 and all(s.seconds == 0.2 for s in cycles)
     backend, first_after = mb.DryRunBackend(), {}
     mb.run_plan(plan, profile, backend, delay_scale=2.0,
                 sleep=lambda s: first_after.setdefault(len(backend.log), s))      # first sleep after the n-th key
@@ -198,8 +272,9 @@ def test_no_key_follows_a_removal_sooner_than_600ms(data, profile):
     """The key right after each SPACE (next E or a cycle key) is only sent after the 600ms settle."""
     plan = mb.build_plan(data, profile)
     ks = [s for s in plan.steps if s.kind == "key"]
+    rc = {id(s) for s in removal_confirms(plan)}
     for i, s in enumerate(ks[:-1]):
-        if s.action == "confirm":
+        if id(s) in rc:
             assert s.seconds >= 0.6 and ks[i + 1].action in ("remove_all", "formation_cycle", "set_cycle", "tab_left")
 
 
@@ -226,13 +301,68 @@ def test_audibles_use_slot_hotkeys_directly(data, profile):
     assert not [s for s in plan.steps if s.action == "assign_audible"]
 
 
-def test_goto_uses_minimal_cycling(data, profile):
+def test_goto_uses_group_cycle_then_set_dropdown(data, profile):
     m = model(NAMES)
     b = mb._Builder(profile, m)
     b.goto("Nickel 2-4 Dbl Mug")
-    assert [s.action for s in b.plan.steps] == ["formation_cycle", "set_cycle"]
+    assert [s.action for s in b.plan.steps] == ["formation_cycle", "set_cycle", "down", "confirm"]
     with pytest.raises(mb.MacroError, match="not in the formation list"):
         b.goto("Nickel 9-9")
+
+
+def test_goto_skips_the_dropdown_when_the_set_is_already_selected(profile):
+    b = mb._Builder(profile, model(NAMES))
+    b.goto("3-4 Even")
+    assert b.plan.steps == []
+    b.goto("Nickel 2-4")                                     # group change selects the first set: no dropdown either
+    assert [s.action for s in b.plan.steps] == ["formation_cycle"]
+
+
+def test_dropdown_matches_the_screenshot_list(profile):
+    """SELECT SET shows 2-4 SINGLE MUG, 2-4 SWAP DBL MUG, 2-4 WIDE, 3-3 ODD, 3-3 SWAP DBL MUG: go to the last row (4 presses down)."""
+    m = model(DROPDOWN_NAMES)
+    b = mb._Builder(profile, m)
+    b.goto("Nickel 3-3 Swap Dbl Mug")
+    assert [s.action for s in b.plan.steps] == ["formation_cycle", "set_cycle"] + ["down"] * 4 + ["confirm"]
+    assert m.current == ("Nickel", "3-3 Swap Dbl Mug") and m.dropdown is None
+    b.goto("Nickel 2-4 Wide")                                # and back up: re-open starts on the current row
+    assert [s.action for s in b.plan.steps][-4:] == ["set_cycle", "up", "up", "confirm"]
+
+
+def test_dropdown_timing_open_move_confirm(profile):
+    b = mb._Builder(profile, model(DROPDOWN_NAMES))
+    b.goto("Nickel 2-4 Swap Dbl Mug")
+    ks = [(s.action, s.seconds) for s in b.plan.steps]
+    assert ks == [("formation_cycle", 0.2), ("set_cycle", 0.2), ("down", 0.15), ("confirm", 0.3)]
+
+
+def test_every_set_menu_is_arrows_then_space_and_never_left_open(data, profile):
+    plan = mb.build_plan(data, profile)
+    acts = [s.action for s in plan.steps if s.kind == "key"]
+    opens = [i for i, a in enumerate(acts) if a == "set_cycle"]
+    assert opens
+    for i in opens:
+        j = i + 1
+        while acts[j] in ("down", "up"):
+            j += 1
+        assert acts[j] == "confirm"                          # closed by SPACE before any other key is sent
+
+
+def test_plan_that_leaves_the_dropdown_open_is_rejected(data, profile):
+    plan = mb.build_plan(data, profile)
+    i = next(i for i, s in enumerate(plan.steps) if s.kind == "key" and s.action == "set_cycle")
+    j = next(k for k in range(i, len(plan.steps)) if plan.steps[k].action == "confirm")
+    del plan.steps[j]                                        # the dropdown stays open and the next key leaks
+    with pytest.raises(mb.MacroError):
+        mb.verify_plan(plan, profile, data, SHEET)
+
+
+def test_dropdown_start_flag_changes_the_plan_but_still_verifies(data, profile):
+    default_len = mb.build_plan(data, profile).counts()["key"]
+    profile["assume"]["dropdown_starts_on_current"] = False
+    plan = mb.build_plan(data, profile)
+    assert mb.verify_plan(plan, profile, data, SHEET).startswith("24 audibles")
+    assert plan.counts()["key"] >= default_len
 
 
 def test_play_scroll_is_relative():
@@ -391,7 +521,7 @@ def test_cli_inject_live_path_with_fake_backend(monkeypatch):
         return b
     monkeypatch.setattr(mb, "DirectInputBackend", fake_backend)
     assert main(["inject", "--run", "--yes", "--start-delay", "0", "--delay-scale", "0"]) == 0
-    assert len(made) == 1 and len(made[0].log) == 205 and made[0].log[:3] == [("key", "e"), ("key", "up"), ("key", "space")]
+    assert len(made) == 1 and len(made[0].log) == 215 and made[0].log[:3] == [("key", "e"), ("key", "up"), ("key", "space")]
 
 
 # ---------------------------------------------------------------- calibration

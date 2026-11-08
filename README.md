@@ -50,7 +50,7 @@ terms); `python cli.py inspect-saves` is a read-only listing of the Documents/Sa
 |---|---|
 | Tab left / right (AUDIBLES, MY PLAYBOOK, ALL PLAYS, MY GAMEPLAN) | `Z` / `C` |
 | Cycle formation group (Nickel, Dime, 3-4, 4-3 ...) | `LCTRL` |
-| Cycle set within the group (2-4, 2-4 Dbl Mug, Over Wide ...) | `LSHIFT` |
+| Open the **SELECT SET** dropdown for the group (2-4, 2-4 Dbl Mug, Over Wide ...); arrows move, `SPACE` selects | `LSHIFT` |
 | Remove / activate all plays of the selected set (MY PLAYBOOK) | `E` |
 | Audible slots on AUDIBLES: top / left / right / bottom | `Q` / `E` / `Z` / `C` |
 | Confirm / back | `SPACE` (bottom bar: `[SPACE] SELECT`) / `BACKSPACE` (avoid `ESC`: it triggers warning prompts) |
@@ -83,9 +83,11 @@ Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
 - Keep the game window focused (the macro aborts if it loses focus), and re-check the canary with `--prune-limit 2`.
 
 ### What the macro does
-- **Prune (MY PLAYBOOK):** for each of the 23 sets: `LCTRL` to its group, `LSHIFT` to the set, then the removal sequence
+- **Prune (MY PLAYBOOK):** for each of the 23 sets: `LCTRL` to its group; `LSHIFT` opens the SELECT SET dropdown, arrow keys move down/up to
+  the set and `SPACE` selects it (skipped when the set is already selected); then the removal sequence
   `E`, 150 ms, `UP`, 100 ms, `SPACE`, 600 ms (the modal needs ~500 ms to fade out and rebuild the list; sending
-  keys sooner lands them in the play list). Every `LCTRL`/`LSHIFT` press is followed by 200 ms. Both are enforced minimums,
+  keys sooner lands them in the play list). Every `LCTRL` press and the `LSHIFT` that opens the dropdown is followed by 200 ms (arrows 150 ms, the selecting
+  `SPACE` 300 ms). Both are enforced minimums,
   so an older saved profile cannot shorten them. `E` opens a "REMOVE PLAY" confirmation whose cursor starts on NO, so `UP`
   moves it to YES and `SPACE` confirms. It plans against a model of the selection state (including that modal), so it
   presses the minimum number of cycles; a plan missing `UP` fails verification because the modal would cancel.
@@ -96,7 +98,10 @@ Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
 
 ### Assumptions (printed before a live run; flags in `data/macro_profile.json` under `assume`)
 - Start on MY PLAYBOOK with the first group and first set selected.
-- `LCTRL`/`LSHIFT` cycle forward and wrap; a new group starts on its first set.
+- `LCTRL` cycles to the next group (forward, wrapping); a new group starts on its first set.
+- `LSHIFT` opens a SELECT SET dropdown that starts on the current set (`dropdown_starts_on_current: false` if it starts on
+  the first row). Arrow keys move its cursor without wrapping and `SPACE` selects. No other key is sent while it is open.
+  `LCTRL` is still assumed to be an instant cycler; if it also opens a dropdown, tell me.
 - After `E`, the emptied set leaves the cycle and the selection lands on the next set (`empty_sets_remain: true` if the
   set stays in the cycle instead).
 - Switching tabs resets selection to the first group/set (`tab_resets_selection: false` if it is kept).

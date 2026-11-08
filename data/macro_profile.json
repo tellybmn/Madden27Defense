@@ -28,11 +28,14 @@
     "remove_open": 0.15,
     "remove_move": 0.1,
     "remove_wait": 0.6,
-    "cycle_settle": 0.2
+    "cycle_settle": 0.2,
+    "set_open": 0.2,
+    "set_confirm": 0.3
   },
   "assume": {
     "empty_sets_remain": false,
-    "tab_resets_selection": true
+    "tab_resets_selection": true,
+    "dropdown_starts_on_current": true
   },
   "formation_order": []
 }

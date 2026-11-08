@@ -25,7 +25,7 @@ PROMPTS: list[tuple[str, str, str]] = [
     ("tab_left", "TAB_LEFT (AUDIBLES <- MY PLAYBOOK <- ALL PLAYS)", "Z"),
     ("tab_right", "TAB_RIGHT", "C"),
     ("formation_cycle", "FORMATION CYCLE (Nickel, Dime, 3-4, 4-3 ...)", "LCTRL"),
-    ("set_cycle", "SET CYCLE (2-4, 2-4 Dbl Mug, Over Wide ...)", "LSHIFT"),
+    ("set_cycle", "SET MENU: opens the SELECT SET dropdown (2-4, 2-4 Dbl Mug, Over Wide ...)", "LSHIFT"),
     ("remove_all", "ACTIVATE/REMOVE ALL PLAYS in the selected set (MY PLAYBOOK)", "E"),
     ("audible_slot_1", "AUDIBLE SLOT 1 - TOP (AUDIBLES tab)", "Q"),
     ("audible_slot_2", "AUDIBLE SLOT 2 - LEFT (AUDIBLES tab)", "E"),
@@ -70,8 +70,8 @@ _MSVCRT_E0 = {"H": "up", "P": "down", "K": "left", "M": "right", "S": "delete", 
 _MSVCRT_00 = {chr(59 + i): f"f{i + 1}" for i in range(10)} | {chr(133): "f11", chr(134): "f12"}
 
 DEFAULT_DELAYS = {"key": 0.15, "menu": 0.8, "section": 1.5, "remove_open": 0.15, "remove_move": 0.10,
-                  "remove_wait": 0.6, "cycle_settle": 0.2}
-DEFAULT_ASSUME = {"empty_sets_remain": False, "tab_resets_selection": True}
+                  "remove_wait": 0.6, "cycle_settle": 0.2, "set_open": 0.2, "set_confirm": 0.3}
+DEFAULT_ASSUME = {"empty_sets_remain": False, "tab_resets_selection": True, "dropdown_starts_on_current": True}
 
 
 def translate_msvcrt(first: str, second: str | None = None) -> str | None:

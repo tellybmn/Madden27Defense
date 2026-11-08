@@ -6,7 +6,8 @@
  ],
  "assumptions": [
   "Start on the MY PLAYBOOK tab with the FIRST formation group and its FIRST set selected.",
-  "LCTRL / LSHIFT cycle forward and wrap; changing group selects that group's first set.",
+  "LCTRL cycles to the next formation group (forward, wrapping) and selects that group's first set.",
+  "LSHIFT opens the SELECT SET dropdown on the current set (assume.dropdown_starts_on_current); the arrow keys move its cursor (no wrap) and SPACE selects. The dropdown lists only the sets still in the playbook.",
   "E opens a REMOVE PLAY confirmation (cursor starts on NO); NAV_UP moves it to YES and CONFIRM (SPACE) removes every play of the set. The emptied set leaves the cycle and selection lands on the next set (wrapping) - unless assume.empty_sets_remain is true.",
   "In-game group/set order matches huddle.gg (or the profile's formation_order).",
   "Switching tabs resets the selection to the first group/set - unless assume.tab_resets_selection is false.",
@@ -184,9 +185,23 @@
   },
   {
    "kind": "key",
-   "value": "shiftleft",
-   "seconds": 0.2,
-   "action": "set_cycle",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "space",
+   "seconds": 0.3,
+   "action": "confirm",
    "exact": false
   },
   {
@@ -411,6 +426,20 @@
    "value": "shiftleft",
    "seconds": 0.2,
    "action": "set_cycle",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "space",
+   "seconds": 0.3,
+   "action": "confirm",
    "exact": false
   },
   {
@@ -919,6 +948,20 @@
   },
   {
    "kind": "key",
+   "value": "space",
+   "seconds": 0.3,
+   "action": "confirm",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down",
+   "exact": false
+  },
+  {
+   "kind": "key",
    "value": "down",
    "seconds": 0.15,
    "action": "down",
@@ -1013,6 +1056,20 @@
    "value": "shiftleft",
    "seconds": 0.2,
    "action": "set_cycle",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "space",
+   "seconds": 0.3,
+   "action": "confirm",
    "exact": false
   },
   {
@@ -1349,6 +1406,20 @@
    "value": "shiftleft",
    "seconds": 0.2,
    "action": "set_cycle",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "down",
+   "seconds": 0.15,
+   "action": "down",
+   "exact": false
+  },
+  {
+   "kind": "key",
+   "value": "space",
+   "seconds": 0.3,
+   "action": "confirm",
    "exact": false
   },
   {

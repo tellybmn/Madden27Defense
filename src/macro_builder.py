@@ -2,8 +2,10 @@
 
 UI model (from the on-screen control hints; see ASSUMPTIONS for the parts still inferred):
   * Tabs, left to right: AUDIBLES, MY PLAYBOOK, ALL PLAYS, MY GAMEPLAN; Z / C switch tabs.
-  * MY PLAYBOOK / AUDIBLES select a formation GROUP with LCTRL (Nickel, Dime, 3-4, 4-3 ...) and a SET within it
-    with LSHIFT (2-4, 2-4 Dbl Mug, Over Wide ...).
+  * MY PLAYBOOK / AUDIBLES select a formation GROUP with LCTRL (Nickel, Dime, 3-4, 4-3 ...). LSHIFT does NOT
+    step through sets: it opens a "SELECT SET" dropdown listing the group's sets vertically, which must be
+    navigated with the arrow keys and confirmed with SPACE; any other key while it is open leaks into the screen
+    behind it (the model treats that as an error).
   * Prune: on MY PLAYBOOK, select the set and press E; a "REMOVE PLAY" modal opens with the cursor on NO, so
     NAV_UP (to YES) and CONFIRM (SPACE) are needed to remove all of its plays; an empty set is gone.
   * Audibles: on AUDIBLES, arrow to the play and press the slot hotkey (top Q, left E, right Z, bottom C).
@@ -35,10 +37,14 @@ TABS = ("AUDIBLES", "MY PLAYBOOK", "ALL PLAYS", "MY GAMEPLAN")
 # holds the previous (shorter) values cannot bring the desync back.
 MIN_REMOVE_SETTLE = 0.6
 MIN_CYCLE_SETTLE = 0.2
+MIN_SET_OPEN = 0.2        # SELECT SET dropdown render time after LSHIFT (chosen, not measured)
+MIN_SET_CONFIRM = 0.3     # dropdown close + header update after SPACE (chosen, not measured)
 
 ASSUMPTIONS = [
     "Start on the MY PLAYBOOK tab with the FIRST formation group and its FIRST set selected.",
-    "LCTRL / LSHIFT cycle forward and wrap; changing group selects that group's first set.",
+    "LCTRL cycles to the next formation group (forward, wrapping) and selects that group's first set.",
+    "LSHIFT opens the SELECT SET dropdown on the current set (assume.dropdown_starts_on_current); the arrow keys "
+    "move its cursor (no wrap) and SPACE selects. The dropdown lists only the sets still in the playbook.",
     "E opens a REMOVE PLAY confirmation (cursor starts on NO); NAV_UP moves it to YES and CONFIRM (SPACE) removes "
     "every play of the set. The emptied set leaves the cycle and selection lands on the next set (wrapping) - "
     "unless assume.empty_sets_remain is true.",
@@ -140,6 +146,7 @@ class UIModel:
         self.removed: list[str] = []
         self.bindings: dict[str, dict[int, str]] = {}
         self.modal: str | None = None          # None, or the modal cursor: "NO" (default) / "YES"
+        self.dropdown: int | None = None       # None, or the cursor row inside the SELECT SET dropdown
 
     @property
     def current(self) -> tuple[str, str]:
@@ -181,6 +188,19 @@ class UIModel:
             else:
                 raise MacroError(f"'{action}' pressed while the REMOVE PLAY confirmation is open")
             return
+        if self.dropdown is not None:              # SELECT SET dropdown is open: it owns the keyboard
+            n = len(self.sets[self.groups[self.g]])
+            if action == "down":
+                self.dropdown = min(self.dropdown + 1, n - 1)
+            elif action == "up":
+                self.dropdown = max(self.dropdown - 1, 0)
+            elif action == "confirm":
+                self.s, self.pcur, self.dropdown = self.dropdown, 0, None
+            elif action == "back":
+                self.dropdown = None
+            else:
+                raise MacroError(f"'{action}' pressed while the SELECT SET dropdown is open")
+            return
         if action in ("tab_left", "tab_right"):
             self.tab = max(0, min(self.tab + (-1 if action == "tab_left" else 1), len(TABS) - 1))
             self.pcur = 0
@@ -188,8 +208,10 @@ class UIModel:
                 self.g = self.s = 0
         elif action == "formation_cycle":
             self.g, self.s, self.pcur = (self.g + 1) % len(self.groups), 0, 0
-        elif action == "set_cycle":
-            self.s, self.pcur = (self.s + 1) % len(self.sets[self.groups[self.g]]), 0
+        elif action == "set_cycle":                # LSHIFT: opens the SELECT SET dropdown
+            if TABS[self.tab] not in ("AUDIBLES", "MY PLAYBOOK"):
+                raise MacroError("set menu opened outside MY PLAYBOOK / AUDIBLES")
+            self.dropdown = self.s if self.assume["dropdown_starts_on_current"] else 0
         elif action == "remove_all":
             if TABS[self.tab] != "MY PLAYBOOK":
                 raise MacroError("remove_all pressed outside MY PLAYBOOK")
@@ -268,19 +290,28 @@ class _Builder:
         self.plan.steps.append(Step("section", label))
 
     def goto(self, name: str) -> None:
-        """Cycle LCTRL to the target group, then LSHIFT to the target set."""
+        """LCTRL to the target group; then, if needed, LSHIFT -> arrows down/up the dropdown -> SPACE."""
         g, s = self.model.locate(name)
-        settle = max(self.d.get("cycle_settle", MIN_CYCLE_SETTLE), MIN_CYCLE_SETTLE)   # header updates after each cycle
+        settle = max(self.d.get("cycle_settle", MIN_CYCLE_SETTLE), MIN_CYCLE_SETTLE)   # header updates after LCTRL
         for _ in range(len(self.model.groups)):
             if self.model.groups[self.model.g] == g:
                 break
             self.press("formation_cycle", wait=settle)
-        for _ in range(len(self.model.sets[g])):
-            if self.model.sets[g][self.model.s] == s:
-                break
-            self.press("set_cycle", wait=settle)
+        if self.model.sets[g][self.model.s] != s:
+            self.select_set(self.model.sets[g].index(s))
         if self.model.current != (g, s):
             raise MacroError(f"could not reach '{name}'")
+
+    def select_set(self, index: int) -> None:
+        """Open SELECT SET, move the dropdown cursor to `index` with the arrow keys, confirm with SPACE."""
+        self.press("set_cycle", wait=max(self.d.get("set_open", MIN_SET_OPEN), MIN_SET_OPEN))
+        for _ in range(len(self.model.sets[self.model.groups[self.model.g]])):
+            if self.model.dropdown == index:
+                break
+            self.press("down" if index > self.model.dropdown else "up")
+        if self.model.dropdown != index:
+            raise MacroError("could not position the SELECT SET dropdown")
+        self.press("confirm", wait=max(self.d.get("set_confirm", MIN_SET_CONFIRM), MIN_SET_CONFIRM))
 
     def scroll_to(self, index: int) -> None:
         """Relative play-list navigation."""
