@@ -70,7 +70,7 @@ _MSVCRT_E0 = {"H": "up", "P": "down", "K": "left", "M": "right", "S": "delete", 
 _MSVCRT_00 = {chr(59 + i): f"f{i + 1}" for i in range(10)} | {chr(133): "f11", chr(134): "f12"}
 
 DEFAULT_DELAYS = {"key": 0.15, "menu": 0.8, "section": 1.5, "remove_open": 0.15, "remove_move": 0.10,
-                  "remove_wait": 0.3}
+                  "remove_wait": 0.6, "cycle_settle": 0.2}
 DEFAULT_ASSUME = {"empty_sets_remain": False, "tab_resets_selection": True}
 
 

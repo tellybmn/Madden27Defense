@@ -159,7 +159,48 @@ def test_removal_sequence_and_timing(data, profile):
     plan = mb.build_plan(data, profile, prune_limit=1)
     ks = [s for s in plan.steps if s.kind == "key"]
     assert [(s.action, s.value, s.seconds, s.exact) for s in ks] == [
-        ("remove_all", "e", 0.15, False), ("up", "up", 0.10, True), ("confirm", "space", 0.30, False)]
+        ("remove_all", "e", 0.15, False), ("up", "up", 0.10, True), ("confirm", "space", 0.60, False)]
+
+
+def test_post_confirm_settle_is_600ms_scaled(data, profile):
+    plan = mb.build_plan(data, profile)
+    confirms = [s for s in plan.steps if s.kind == "key" and s.action == "confirm"]
+    assert len(confirms) == 23 and {s.seconds for s in confirms} == {0.6}
+    sleeps = []
+    mb.run_plan(mb.build_plan(data, profile, prune_limit=1), profile, mb.DryRunBackend(), sleep=sleeps.append,
+                delay_scale=1.5)
+    assert round(sleeps[-1], 3) == 0.9
+
+
+def test_stale_saved_profile_cannot_bring_back_the_short_settles(data, profile):
+    profile["delays"]["remove_wait"] = 0.3                    # what an older `calibrate` run wrote to disk
+    profile["delays"]["cycle_settle"] = 0.05
+    plan = mb.build_plan(data, profile)
+    assert {s.seconds for s in plan.steps if s.kind == "key" and s.action == "confirm"} == {0.6}
+    assert {s.seconds for s in plan.steps if s.kind == "key" and s.action in ("formation_cycle", "set_cycle")} == {0.2}
+    profile["delays"]["remove_wait"] = 1.0                    # a slower value is honoured
+    assert {s.seconds for s in mb.build_plan(data, profile).steps if s.action == "confirm"} == {1.0}
+
+
+def test_every_cycle_key_is_followed_by_200ms(data, profile):
+    plan = mb.build_plan(data, profile)
+    cycles = [s for s in plan.steps if s.kind == "key" and s.action in ("formation_cycle", "set_cycle")]
+    assert len(cycles) >= 11 and all(s.seconds == 0.2 for s in cycles)
+    backend, first_after = mb.DryRunBackend(), {}
+    mb.run_plan(plan, profile, backend, delay_scale=2.0,
+                sleep=lambda s: first_after.setdefault(len(backend.log), s))      # first sleep after the n-th key
+    keys = [s for s in plan.steps if s.kind == "key"]
+    after_cycle = [first_after[i + 1] for i, s in enumerate(keys) if s.action in ("formation_cycle", "set_cycle")]
+    assert after_cycle and all(round(x, 3) == 0.4 for x in after_cycle)       # 200ms x 2.0
+
+
+def test_no_key_follows_a_removal_sooner_than_600ms(data, profile):
+    """The key right after each SPACE (next E or a cycle key) is only sent after the 600ms settle."""
+    plan = mb.build_plan(data, profile)
+    ks = [s for s in plan.steps if s.kind == "key"]
+    for i, s in enumerate(ks[:-1]):
+        if s.action == "confirm":
+            assert s.seconds >= 0.6 and ks[i + 1].action in ("remove_all", "formation_cycle", "set_cycle", "tab_left")
 
 
 def test_each_removal_is_e_up_confirm_in_order(data, profile):
@@ -410,7 +451,7 @@ def test_calibrate_preserves_window_title_order_and_delays(tmp_path):
     path.write_text(json.dumps({"window_title": "Madden Custom", "formation_order": ["A", "B"], "delays": {"key": 0.3}}))
     prof = cal.run_calibration(path, read_key=reader([]), ask=asker(["y", ""]), out=lambda m: None)
     assert prof["window_title"] == "Madden Custom" and prof["formation_order"] == ["A", "B"]
-    assert prof["delays"]["key"] == 0.3 and prof["delays"]["remove_wait"] == 0.3
+    assert prof["delays"]["key"] == 0.3 and prof["delays"]["remove_wait"] == 0.6
 
 
 def test_calibrated_profile_unlocks_live_run(tmp_path, data=None):
@@ -521,7 +562,7 @@ def test_every_key_is_followed_by_at_least_150ms_times_scale(data, profile):
 def test_modal_nav_up_pause_is_exactly_100ms_scaled(data, profile):
     plan, sleeps = mb.build_plan(data, profile, prune_limit=1), []
     mb.run_plan(plan, profile, mb.DryRunBackend(), sleep=sleeps.append, delay_scale=1.5)
-    assert [round(x, 3) for x in sleeps] == [0.225, 0.15, 0.45]       # 150ms, 100ms, 300ms all x1.5
+    assert [round(x, 3) for x in sleeps] == [0.225, 0.15, 0.9]        # 150ms, 100ms, 600ms all x1.5
 
 
 def test_live_run_uses_hold_through_the_real_backend_class(data, profile):

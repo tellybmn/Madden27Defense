@@ -84,7 +84,9 @@ Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
 
 ### What the macro does
 - **Prune (MY PLAYBOOK):** for each of the 23 sets: `LCTRL` to its group, `LSHIFT` to the set, then the removal sequence
-  `E`, 150 ms, `UP`, 100 ms, `SPACE`, 300 ms. `E` opens a "REMOVE PLAY" confirmation whose cursor starts on NO, so `UP`
+  `E`, 150 ms, `UP`, 100 ms, `SPACE`, 600 ms (the modal needs ~500 ms to fade out and rebuild the list; sending
+  keys sooner lands them in the play list). Every `LCTRL`/`LSHIFT` press is followed by 200 ms. Both are enforced minimums,
+  so an older saved profile cannot shorten them. `E` opens a "REMOVE PLAY" confirmation whose cursor starts on NO, so `UP`
   moves it to YES and `SPACE` confirms. It plans against a model of the selection state (including that modal), so it
   presses the minimum number of cycles; a plan missing `UP` fails verification because the modal would cancel.
 - **Audibles (AUDIBLES):** `Z` once to leave MY PLAYBOOK, then for each kept set: cycle to it, arrow to each play and

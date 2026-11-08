@@ -30,6 +30,12 @@ SLOT_BUTTON = {1: "Y", 2: "X", 3: "B", 4: "A"}
 REQUIRED_KEYS = [k for k, _, _ in PROMPTS]
 TABS = ("AUDIBLES", "MY PLAYBOOK", "ALL PLAYS", "MY GAMEPLAN")
 
+# Measured on the real game: the REMOVE PLAY modal takes ~500 ms to fade out and rebuild the list, and the
+# group/set header needs a moment after each cycle key. These are floors, so an older saved profile that still
+# holds the previous (shorter) values cannot bring the desync back.
+MIN_REMOVE_SETTLE = 0.6
+MIN_CYCLE_SETTLE = 0.2
+
 ASSUMPTIONS = [
     "Start on the MY PLAYBOOK tab with the FIRST formation group and its FIRST set selected.",
     "LCTRL / LSHIFT cycle forward and wrap; changing group selects that group's first set.",
@@ -250,10 +256,10 @@ class _Builder:
         self.model.apply(action)
 
     def remove_set(self) -> None:
-        """E -> 150ms -> NAV_UP (NO -> YES) -> 100ms -> CONFIRM -> 300ms (modal dismisses, list updates)."""
+        """E -> 150ms -> NAV_UP (NO -> YES) -> 100ms -> CONFIRM -> 600ms (modal fades out, list rebuilds)."""
         self.press("remove_all", wait=self.d["remove_open"])
         self.press("up", wait=self.d["remove_move"], exact=True)
-        self.press("confirm", wait=self.d["remove_wait"])
+        self.press("confirm", wait=max(self.d["remove_wait"], MIN_REMOVE_SETTLE))   # modal fade-out + list rebuild
 
     def wait(self, seconds: float) -> None:
         self.plan.steps.append(Step("wait", seconds=seconds))
@@ -264,14 +270,15 @@ class _Builder:
     def goto(self, name: str) -> None:
         """Cycle LCTRL to the target group, then LSHIFT to the target set."""
         g, s = self.model.locate(name)
+        settle = max(self.d.get("cycle_settle", MIN_CYCLE_SETTLE), MIN_CYCLE_SETTLE)   # header updates after each cycle
         for _ in range(len(self.model.groups)):
             if self.model.groups[self.model.g] == g:
                 break
-            self.press("formation_cycle")
+            self.press("formation_cycle", wait=settle)
         for _ in range(len(self.model.sets[g])):
             if self.model.sets[g][self.model.s] == s:
                 break
-            self.press("set_cycle")
+            self.press("set_cycle", wait=settle)
         if self.model.current != (g, s):
             raise MacroError(f"could not reach '{name}'")
 
