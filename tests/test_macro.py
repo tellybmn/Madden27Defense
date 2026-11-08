@@ -126,8 +126,8 @@ def test_audibles_use_slot_hotkeys_directly(data, profile):
     plan = mb.build_plan(data, profile)
     slots = [s for s in plan.steps if s.kind == "key" and s.action.startswith("audible_slot_")]
     assert len(slots) == 24
-    assert {s.action: s.value for s in slots} == {"audible_slot_1": "e", "audible_slot_2": "z",
-                                                  "audible_slot_3": "c", "audible_slot_4": "space"}
+    assert {s.action: s.value for s in slots} == {"audible_slot_1": "q", "audible_slot_2": "e",
+                                                  "audible_slot_3": "z", "audible_slot_4": "c"}
     assert not [s for s in plan.steps if s.action == "assign_audible"]
 
 
@@ -221,12 +221,16 @@ def test_focus_loss_aborts(data, profile):
     assert len(b.log) == 3
 
 
+def test_shipped_profile_is_calibrated_with_no_unverified_keys(profile):
+    assert profile["calibrated"] is True and profile["unverified"] == []
+
+
 def test_live_refused_when_uncalibrated_or_unverified(data, profile):
     plan = mb.build_plan(data, profile)
-    assert profile["calibrated"] is False and profile["unverified"] == ["audible_slot_4"]
+    profile["calibrated"] = False
     with pytest.raises(mb.MacroError, match="not calibrated"):
         mb.run_plan(plan, profile, mb.DryRunBackend(), live=True, sleep=lambda s: None)
-    profile["calibrated"] = True
+    profile["calibrated"], profile["unverified"] = True, ["audible_slot_4"]
     with pytest.raises(mb.MacroError, match="unverified keys remain: audible_slot_4"):
         mb.run_plan(plan, profile, mb.DryRunBackend(), live=True, sleep=lambda s: None)
     profile["unverified"] = []
@@ -237,7 +241,8 @@ def test_profile_ships_verified_defaults(profile):
     k = profile["keys"]
     assert (k["tab_left"], k["tab_right"], k["formation_cycle"], k["set_cycle"], k["remove_all"]) == \
         ("z", "c", "ctrlleft", "shiftleft", "e")
-    assert (k["audible_slot_1"], k["audible_slot_2"], k["audible_slot_3"]) == ("e", "z", "c")
+    assert (k["audible_slot_1"], k["audible_slot_2"], k["audible_slot_3"], k["audible_slot_4"]) == ("q", "e", "z", "c")
+    assert {x: k[x] for x in cal.VERIFIED_DEFAULTS} == cal.VERIFIED_DEFAULTS and not cal.UNVERIFIED_KEYS
 
 
 def test_profile_validation_is_context_aware(tmp_path):
@@ -281,8 +286,17 @@ def test_cli_inject_prune_limit_and_exclusive_flags(tmp_path):
         main(["inject", "--run", "--dry-run"])
 
 
-def test_cli_inject_live_blocked_by_unverified_key():
-    assert main(["inject", "--run", "--yes", "--start-delay", "0"]) == 3     # unverified key / no pydirectinput
+def test_cli_inject_live_path_with_fake_backend(monkeypatch):
+    """Exercise --run end to end WITHOUT sending real input (the real backend would type into any window)."""
+    made = []
+
+    def fake_backend(killswitch):
+        b = mb.DryRunBackend()
+        made.append(b)
+        return b
+    monkeypatch.setattr(mb, "DirectInputBackend", fake_backend)
+    assert main(["inject", "--run", "--yes", "--start-delay", "0", "--delay-scale", "0"]) == 0
+    assert len(made) == 1 and len(made[0].log) == 159 and made[0].log[0] == ("key", "e")
 
 
 # ---------------------------------------------------------------- calibration
@@ -296,37 +310,42 @@ def reader(keys):
     return lambda label: next(it)
 
 
-def test_calibrate_defaults_path_confirms_only_the_unverified_key(tmp_path):
-    path, outs = tmp_path / "p.json", []
-    prof = cal.run_calibration(path, read_key=reader(["x"]), ask=asker(["y", ""]), out=outs.append)
+FULL = ["enter", "backspace", "up", "down", "left", "right", "z", "c", "e", "q", "e", "z", "c"]
+TYPED = ["n", "ctrlleft", "shiftleft"]      # 'n' = no defaults, then the two typed-only modifier keys
+
+
+def test_calibrate_defaults_path_needs_no_key_presses(tmp_path):
+    path = tmp_path / "p.json"
+    prof = cal.run_calibration(path, read_key=reader([]), ask=asker(["y", ""]), out=lambda m: None)
     saved = json.loads(path.read_text())
     assert saved == prof and saved["calibrated"] is True and saved["unverified"] == []
-    assert saved["keys"]["audible_slot_4"] == "x" and saved["keys"]["formation_cycle"] == "ctrlleft"
     assert saved["killswitch"] == "pause"
-    assert {k: v for k, v in saved["keys"].items() if k in cal.VERIFIED_DEFAULTS} == cal.VERIFIED_DEFAULTS
+    assert saved["keys"] == {**cal.VERIFIED_DEFAULTS}
 
 
 def test_calibrate_full_capture_path(tmp_path):
-    keys = ["enter", "backspace", "up", "down", "left", "right", "z", "c", "e", "e", "z", "c", "space"]
-    prof = cal.run_calibration(tmp_path / "p.json", read_key=reader(keys),
-                               ask=asker(["n", "ctrlleft", "shiftleft", "f12"]), out=lambda m: None)
-    assert prof["keys"]["remove_all"] == "e" and prof["keys"]["audible_slot_1"] == "e"   # cross-screen repeat OK
-    assert prof["keys"]["set_cycle"] == "shiftleft" and prof["killswitch"] == "f12"
+    prof = cal.run_calibration(tmp_path / "p.json", read_key=reader(FULL),
+                               ask=asker(TYPED + ["f12"]), out=lambda m: None)
+    assert prof["keys"] == cal.VERIFIED_DEFAULTS            # same keys captured by hand
+    assert prof["keys"]["remove_all"] == prof["keys"]["audible_slot_2"] == "e"   # cross-screen repeat OK
+    assert prof["killswitch"] == "f12"
 
 
 def test_calibrate_rejects_same_screen_conflicts_and_unknown_keys(tmp_path):
+    keys = ["enter", "enter", "bogus-key", "backspace"] + FULL[2:12] + ["q", "c"]   # slot 4 'q' clashes with slot 1
     outs = []
-    # slot 4: 'e' collides with slot 1 (AUDIBLES), 'bogus-key' is unknown, 'x' is fine
-    cal.run_calibration(tmp_path / "p.json", read_key=reader(["e", "bogus-key", "x"]),
-                        ask=asker(["y", ""]), out=outs.append)
+    prof = cal.run_calibration(tmp_path / "p.json", read_key=reader(keys), ask=asker(TYPED + [""]), out=outs.append)
     text = "\n".join(outs)
-    assert "already bound to audible_slot_1 on the same screen" in text and "not a recognised key" in text
+    assert "already bound to confirm on the same screen" in text and "not a recognised key" in text
+    assert "already bound to audible_slot_1 on the same screen" in text
+    assert prof["keys"]["audible_slot_4"] == "c"
 
 
 def test_calibrate_killswitch_rules(tmp_path):
+    keys = FULL[:8] + ["f12"] + FULL[9:]                     # remove_all bound to F12
     outs = []
-    prof = cal.run_calibration(tmp_path / "p.json", read_key=reader(["f12"]),     # slot 4 bound to F12
-                               ask=asker(["y", "enter", "f12", "pause"]), out=outs.append)
+    prof = cal.run_calibration(tmp_path / "p.json", read_key=reader(keys),
+                               ask=asker(TYPED + ["enter", "f12", "pause"]), out=outs.append)
     text = "\n".join(outs)
     assert prof["killswitch"] == "pause"
     assert "killswitch must be one of" in text and "already bound to a menu action" in text
@@ -335,14 +354,14 @@ def test_calibrate_killswitch_rules(tmp_path):
 def test_calibrate_preserves_window_title_order_and_delays(tmp_path):
     path = tmp_path / "p.json"
     path.write_text(json.dumps({"window_title": "Madden Custom", "formation_order": ["A", "B"], "delays": {"key": 0.3}}))
-    prof = cal.run_calibration(path, read_key=reader(["x"]), ask=asker(["y", ""]), out=lambda m: None)
+    prof = cal.run_calibration(path, read_key=reader([]), ask=asker(["y", ""]), out=lambda m: None)
     assert prof["window_title"] == "Madden Custom" and prof["formation_order"] == ["A", "B"]
     assert prof["delays"]["key"] == 0.3 and prof["delays"]["remove_wait"] == 0.3
 
 
 def test_calibrated_profile_unlocks_live_run(tmp_path, data=None):
     path = tmp_path / "p.json"
-    cal.run_calibration(path, read_key=reader(["x"]), ask=asker(["y", ""]), out=lambda m: None)
+    cal.run_calibration(path, read_key=reader([]), ask=asker(["y", ""]), out=lambda m: None)
     prof = mb.load_profile(path)
     assert prof["calibrated"] is True and prof["unverified"] == []
 
@@ -357,8 +376,8 @@ def test_msvcrt_translation(seq, name):
 
 def test_cli_calibrate_command(tmp_path, monkeypatch):
     path = tmp_path / "p.json"
-    keys, answers = iter(["x"]), iter(["y", ""])
-    monkeypatch.setattr(cal, "default_reader", lambda ask=input: (lambda label: next(keys)))
+    answers = iter(["y", ""])
+    monkeypatch.setattr(cal, "default_reader", lambda ask=input: (lambda label: pytest.fail("no key press expected")))
     monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
     assert main(["calibrate", "--profile", str(path)]) == 0
     assert json.loads(path.read_text())["calibrated"] is True

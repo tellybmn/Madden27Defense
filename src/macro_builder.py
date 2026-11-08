@@ -5,7 +5,7 @@ UI model (from the on-screen control hints; see ASSUMPTIONS for the parts still 
   * MY PLAYBOOK / AUDIBLES select a formation GROUP with LCTRL (Nickel, Dime, 3-4, 4-3 ...) and a SET within it
     with LSHIFT (2-4, 2-4 Dbl Mug, Over Wide ...).
   * Prune: on MY PLAYBOOK, select the set and press E to remove all of its plays; an empty set is gone.
-  * Audibles: on AUDIBLES, arrow to the play and press the slot hotkey (top E, left Z, right C, bottom = calibrated).
+  * Audibles: on AUDIBLES, arrow to the play and press the slot hotkey (top Q, left E, right Z, bottom C).
 The plan is built closed-loop against ``UIModel`` (every key press is applied to the model while planning) and
 ``verify_plan`` replays it on a fresh model and checks the result against the cheat sheet. That proves the plan is
 consistent with the model, not that the model matches the game; every inference is listed in ``ASSUMPTIONS`` and

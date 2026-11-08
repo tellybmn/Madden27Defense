@@ -1,11 +1,11 @@
 """Interactive key calibration: records keys and writes data/macro_profile.json.
 
 Madden 27 PC defaults taken from the on-screen Creation Center hints are built in (VERIFIED_DEFAULTS).
-One key was not provided and is never guessed: the BOTTOM audible slot (UNVERIFIED_KEYS). A profile that still
-has unverified keys cannot be used for a live run.
+Any key without a verified default is never guessed: it goes in UNVERIFIED_KEYS and a profile that still has
+unverified keys cannot be used for a live run (currently none).
 
 Keys legitimately repeat across tabs (Z/C switch tabs on MY PLAYBOOK but are audible slots on AUDIBLES;
-E removes all plays on MY PLAYBOOK but is the top audible slot on AUDIBLES), so duplicate checks are per context.
+E removes all plays on MY PLAYBOOK but is the left audible slot on AUDIBLES), so duplicate checks are per context.
 """
 from __future__ import annotations
 
@@ -27,10 +27,10 @@ PROMPTS: list[tuple[str, str, str]] = [
     ("formation_cycle", "FORMATION CYCLE (Nickel, Dime, 3-4, 4-3 ...)", "LCTRL"),
     ("set_cycle", "SET CYCLE (2-4, 2-4 Dbl Mug, Over Wide ...)", "LSHIFT"),
     ("remove_all", "ACTIVATE/REMOVE ALL PLAYS in the selected set (MY PLAYBOOK)", "E"),
-    ("audible_slot_1", "AUDIBLE SLOT 1 - TOP (AUDIBLES tab)", "E"),
-    ("audible_slot_2", "AUDIBLE SLOT 2 - LEFT (AUDIBLES tab)", "Z"),
-    ("audible_slot_3", "AUDIBLE SLOT 3 - RIGHT (AUDIBLES tab)", "C"),
-    ("audible_slot_4", "AUDIBLE SLOT 4 - BOTTOM (AUDIBLES tab)", "read it off the on-screen hint"),
+    ("audible_slot_1", "AUDIBLE SLOT 1 - TOP (AUDIBLES tab)", "Q"),
+    ("audible_slot_2", "AUDIBLE SLOT 2 - LEFT (AUDIBLES tab)", "E"),
+    ("audible_slot_3", "AUDIBLE SLOT 3 - RIGHT (AUDIBLES tab)", "Z"),
+    ("audible_slot_4", "AUDIBLE SLOT 4 - BOTTOM (AUDIBLES tab)", "C"),
 ]
 
 VERIFIED_DEFAULTS: dict[str, str] = {
@@ -38,10 +38,12 @@ VERIFIED_DEFAULTS: dict[str, str] = {
     "up": "up", "down": "down", "left": "left", "right": "right",
     "tab_left": "z", "tab_right": "c",
     "formation_cycle": "ctrlleft", "set_cycle": "shiftleft", "remove_all": "e",
-    "audible_slot_1": "e", "audible_slot_2": "z", "audible_slot_3": "c",
+    "audible_slot_1": "q", "audible_slot_2": "e", "audible_slot_3": "z", "audible_slot_4": "c",
 }
-UNVERIFIED_KEYS = ("audible_slot_4",)
-PROVISIONAL = {"audible_slot_4": "space"}          # placeholder so dry runs work; blocks live runs
+# Keys without a verified default: the profile is marked unverified and live runs are refused until the wizard
+# has captured them. Empty now that all four audible slot keys are confirmed.
+UNVERIFIED_KEYS: tuple[str, ...] = ()
+PROVISIONAL: dict[str, str] = {}
 TYPED_ONLY = ("formation_cycle", "set_cycle")      # modifier keys cannot be captured by a console read
 
 # Keys that can be pressed at the same time in the same screen must differ.
@@ -115,8 +117,8 @@ def conflict(keys: dict[str, str], action: str, name: str) -> str | None:
 def default_profile() -> dict:
     keys = {**VERIFIED_DEFAULTS, **PROVISIONAL}
     return {
-        "_readme": "Verified Madden 27 PC defaults. audible_slot_4 (bottom) is UNVERIFIED: run `python cli.py calibrate`.",
-        "calibrated": False,
+        "_readme": "Verified Madden 27 PC defaults (audible slots: top Q, left E, right Z, bottom C).",
+        "calibrated": not UNVERIFIED_KEYS,
         "unverified": list(UNVERIFIED_KEYS),
         "window_title": "Madden NFL 27",
         "killswitch": DEFAULT_KILLSWITCH,
@@ -158,7 +160,7 @@ def run_calibration(profile_path: Path, *, read_key: Callable[[str], str], ask: 
         profile["delays"] |= old.get("delays", {})
         profile["assume"] |= old.get("assume", {})
     labels = {k: (lab, hint) for k, lab, hint in PROMPTS}
-    use_defaults = ask("Use the verified Madden 27 PC defaults (Z/C tabs, LCTRL/LSHIFT, E, slots E/Z/C)? [Y/n]: "
+    use_defaults = ask("Use the verified Madden 27 PC defaults (Z/C tabs, LCTRL/LSHIFT, E, slots Q/E/Z/C)? [Y/n]: "
                        ).strip().lower() not in ("n", "no")
     keys: dict[str, str] = {}
     for action, label, hint in PROMPTS:

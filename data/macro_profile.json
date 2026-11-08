@@ -1,9 +1,7 @@
 {
-  "_readme": "Verified Madden 27 PC defaults. audible_slot_4 (bottom) is UNVERIFIED: run `python cli.py calibrate`.",
-  "calibrated": false,
-  "unverified": [
-    "audible_slot_4"
-  ],
+  "_readme": "Verified Madden 27 PC defaults (audible slots: top Q, left E, right Z, bottom C).",
+  "calibrated": true,
+  "unverified": [],
   "window_title": "Madden NFL 27",
   "killswitch": "pause",
   "keys": {
@@ -18,10 +16,10 @@
     "formation_cycle": "ctrlleft",
     "set_cycle": "shiftleft",
     "remove_all": "e",
-    "audible_slot_1": "e",
-    "audible_slot_2": "z",
-    "audible_slot_3": "c",
-    "audible_slot_4": "space"
+    "audible_slot_1": "q",
+    "audible_slot_2": "e",
+    "audible_slot_3": "z",
+    "audible_slot_4": "c"
   },
   "delays": {
     "key": 0.15,

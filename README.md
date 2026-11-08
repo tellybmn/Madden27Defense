@@ -52,8 +52,7 @@ terms); `python cli.py inspect-saves` is a read-only listing of the Documents/Sa
 | Cycle formation group (Nickel, Dime, 3-4, 4-3 ...) | `LCTRL` |
 | Cycle set within the group (2-4, 2-4 Dbl Mug, Over Wide ...) | `LSHIFT` |
 | Remove / activate all plays of the selected set (MY PLAYBOOK) | `E` |
-| Audible slots on AUDIBLES: top / left / right | `E` / `Z` / `C` |
-| Audible slot: **bottom** | **not provided - you must confirm it in `calibrate`** |
+| Audible slots on AUDIBLES: top / left / right / bottom | `Q` / `E` / `Z` / `C` |
 | Confirm / back | `ENTER` / `BACKSPACE` (avoid `ESC`: it triggers warning prompts) |
 
 Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
@@ -63,8 +62,9 @@ Z, C and E repeat across tabs on purpose; duplicate checks are per screen.
 2. Build the inputs (they must agree; `inject` refuses otherwise):
    `python cli.py build --base vikings --style flores-macdonald --db data/live.db --out data/live_playbook.json`
    `python cli.py export-audibles --playbook data/live_playbook.json --format markdown --out data/AUDIBLES_CHEAT_SHEET.md`
-3. `python cli.py calibrate`: accept the verified defaults (Y), press the bottom-slot key shown on your AUDIBLES screen,
-   and pick a killswitch (default `pause`, or `f12`). A live run is refused until this has been done.
+3. `data/macro_profile.json` already ships calibrated with these verified keys. Run `python cli.py calibrate` only to
+   change a key or the killswitch (default `pause`, or `f12`). A live run is refused if the profile is uncalibrated or
+   has any key marked unverified.
 4. `python cli.py inject --plan-out data/macro_plan.json --dry-run`
 5. In Madden: add `Nickel 3-3 Swap Dbl Mug` from the Jaguars / Multiple D pool (not automated), open
    **MY PLAYBOOK** with the first formation group and its first set selected.
